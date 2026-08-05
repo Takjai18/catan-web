@@ -10,6 +10,8 @@ import {
   RES_COLOR,
   MAP_MODES,
   NUMBER_PIPS as CONST_PIPS,
+  NUMBER_LETTERS,
+  HEX_SPIRAL_ORDER,
 } from './constants.js';
 
 const HEX_SIZE = 54;
@@ -145,59 +147,95 @@ function placeTerrainTypes(modeId = 'balanced') {
   return best;
 }
 
+/** Rotate axial hex 60° clockwise around origin (pointy-top cube rotate). */
+function rot60(q, r) {
+  return { q: -r, r: q + r };
+}
+
+function rot60n(q, r, times) {
+  let cq = q;
+  let cr = r;
+  const t = ((times % 6) + 6) % 6;
+  for (let i = 0; i < t; i++) {
+    const n = rot60(cq, cr);
+    cq = n.q;
+    cr = n.r;
+  }
+  return { q: cq, r: cr };
+}
+
 /**
- * Assign number tokens using dice probability constraints:
- * - 6 and 8 (5-pip / "red") must not be adjacent
- * - High-pip numbers prefer not stacking on the same resource
- * - Per-resource total pip value stays roughly balanced
- * - Scarce resources (brick, ore) get a fair share of mid/high pips
+ * Official Catan number placement: walk the board spiral A→R,
+ * skip desert, place the next letter token on each land hex.
+ * Random start = whole-board 60° rotations (keeps official 6/8 spacing).
+ * @returns {{ numbers: (number|null)[], letters: (string|null)[] }}
  */
-function placeNumbers(types, modeId = 'balanced') {
-  const mode = MAP_MODES[modeId] || MAP_MODES.balanced;
-  const noDesert = mode.noDesert;
-  const landIdx = [];
-  for (let i = 0; i < types.length; i++) {
-    if (types[i] !== 'desert') landIdx.push(i);
+function placeNumbersAlphabet(types, { randomStart = true } = {}) {
+  const n = types.length;
+  const numbers = new Array(n).fill(null);
+  const letters = new Array(n).fill(null);
+
+  // Map (q,r) → tile index
+  const indexByKey = {};
+  HEX_COORDS.forEach((c, i) => {
+    indexByKey[`${c.q},${c.r}`] = i;
+  });
+
+  // Optional: rotate entire spiral geometry 0–5 times (any corner can be "A")
+  const turns = randomStart ? Math.floor(Math.random() * 6) : 0;
+  // Optional mirror (counter-clockwise spiral) for variety
+  const mirror = randomStart && Math.random() < 0.5;
+
+  const spiralCoords = HEX_SPIRAL_ORDER.map((idx) => {
+    const base = HEX_COORDS[idx];
+    let q = base.q;
+    let r = base.r;
+    if (mirror) {
+      // Reflect over q-axis in axial: (q,r) -> (q+r, -r)
+      const mq = q + r;
+      const mr = -r;
+      q = mq;
+      r = mr;
+    }
+    return rot60n(q, r, turns);
+  });
+
+  let li = 0;
+  for (const { q, r } of spiralCoords) {
+    const hexIdx = indexByKey[`${q},${r}`];
+    if (hexIdx == null) continue;
+    if (types[hexIdx] === 'desert') continue;
+    if (li >= NUMBER_LETTERS.length) {
+      // noDesert board: 19th land hex — extra mid-pip token (not official letter)
+      const extras = [3, 4, 5, 9, 10, 11];
+      numbers[hexIdx] = extras[Math.floor(Math.random() * extras.length)];
+      letters[hexIdx] = null;
+      continue;
+    }
+    const tok = NUMBER_LETTERS[li++];
+    numbers[hexIdx] = tok.number;
+    letters[hexIdx] = tok.letter;
   }
 
-  const tokenPool = getNumberTokens(noDesert);
-  if (tokenPool.length !== landIdx.length) {
-    console.warn(
-      `Number token count ${tokenPool.length} != land tiles ${landIdx.length}`
-    );
-  }
-
-  // random / wild: shuffle then only repair adjacent 6/8
-  if (modeId === 'random' || modeId === 'wild') {
-    const nums = shuffle([...tokenPool]);
-    const assign = new Array(types.length).fill(null);
-    landIdx.forEach((idx, k) => {
-      assign[idx] = nums[k];
-    });
-    return repairNumberLayout(types, assign, { light: true });
-  }
-
-  let bestAssign = null;
-  let bestScore = -Infinity;
-  const attempts = modeId === 'beginner' ? 280 : 200;
-  const scoreOpts = { beginner: modeId === 'beginner' };
-
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    const nums = shuffle([...tokenPool]);
-    const assign = new Array(types.length).fill(null);
-    landIdx.forEach((idx, k) => {
-      assign[idx] = nums[k];
-    });
-
-    const score = scoreNumberLayout(types, assign, scoreOpts);
-    if (score > bestScore) {
-      bestScore = score;
-      bestAssign = assign;
-      if (score >= (modeId === 'beginner' ? 55 : 40)) break;
+  // Safety: any remaining land without a number
+  for (let i = 0; i < n; i++) {
+    if (types[i] !== 'desert' && numbers[i] == null) {
+      numbers[i] = 4;
+      letters[i] = null;
     }
   }
 
-  return repairNumberLayout(types, bestAssign, scoreOpts);
+  return { numbers, letters };
+}
+
+/**
+ * Assign number tokens.
+ * Default: official A–R alphabetical spiral (desert skipped).
+ * Only used for layout metadata; terrain still varies by map mode.
+ */
+function placeNumbers(types, modeId = 'balanced') {
+  // Official variable setup: terrain random/balanced, numbers always A–R spiral
+  return placeNumbersAlphabet(types, { randomStart: modeId !== 'beginner' });
 }
 
 function scoreNumberLayout(types, assign, opts = {}) {
@@ -338,7 +376,7 @@ export function generateBoard(opts = {}) {
   const noDesert = mode.noDesert;
 
   const types = placeTerrainTypes(modeId);
-  const numbers = placeNumbers(types, modeId);
+  const { numbers, letters } = placeNumbers(types, modeId);
 
   const tiles = [];
   const tileByKey = {};
@@ -348,6 +386,7 @@ export function generateBoard(opts = {}) {
     const type = types[i];
     const pixel = axialToPixel(coord.q, coord.r);
     const number = type === 'desert' ? null : numbers[i];
+    const letter = type === 'desert' ? null : letters[i];
     if (type === 'desert') desertId = i;
     const pips = number != null ? NUMBER_PIPS[number] : 0;
     const tile = {
@@ -356,6 +395,7 @@ export function generateBoard(opts = {}) {
       r: coord.r,
       type,
       number,
+      letter, // official chit letter A–R (null if desert / extra)
       pips, // dice ways / 36
       probability: number != null ? pips / 36 : 0,
       robber: false,

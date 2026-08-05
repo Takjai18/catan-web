@@ -396,12 +396,17 @@ function renderBoard(game, handlers) {
     if (hasNum && prob) {
       const hot = t.number === 6 || t.number === 8;
       const numColor = hot ? '#c0392b' : '#1a1208';
-      // Number token plate
+      // Number token plate (official letter A–R + number)
       parts.push(
         `<rect x="${t.cx - 22}" y="${t.cy + 10}" width="44" height="28" rx="8" fill="#f5f0e6" stroke="#222" stroke-width="1.2" pointer-events="none" />`
       );
+      if (t.letter) {
+        parts.push(
+          `<text class="tile-letter" x="${t.cx - 14}" y="${t.cy + 16}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="700" fill="#555" pointer-events="none">${t.letter}</text>`
+        );
+      }
       parts.push(
-        `<text class="number-token${hot ? ' hot' : ''}" x="${t.cx}" y="${t.cy + 20}" font-size="${hot ? 13 : 12}" fill="${numColor}">${t.number}</text>`
+        `<text class="number-token${hot ? ' hot' : ''}" x="${t.cx + (t.letter ? 3 : 0)}" y="${t.cy + 20}" font-size="${hot ? 13 : 12}" fill="${numColor}">${t.number}</text>`
       );
       // Classic pip dots
       parts.push(

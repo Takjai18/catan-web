@@ -91,6 +91,41 @@ export const TILE_TYPES = [
 /** Number tokens (no 7); desert gets none — 18 tokens */
 export const NUMBER_TOKENS = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
 
+/**
+ * Official Catan number chits A–R (letter printed on each token).
+ * Place in alphabetical order along the board spiral; skip desert.
+ */
+export const NUMBER_LETTERS = [
+  { letter: 'A', number: 5 },
+  { letter: 'B', number: 2 },
+  { letter: 'C', number: 6 },
+  { letter: 'D', number: 3 },
+  { letter: 'E', number: 8 },
+  { letter: 'F', number: 10 },
+  { letter: 'G', number: 9 },
+  { letter: 'H', number: 12 },
+  { letter: 'I', number: 11 },
+  { letter: 'J', number: 4 },
+  { letter: 'K', number: 8 },
+  { letter: 'L', number: 10 },
+  { letter: 'M', number: 9 },
+  { letter: 'N', number: 4 },
+  { letter: 'O', number: 5 },
+  { letter: 'P', number: 6 },
+  { letter: 'Q', number: 3 },
+  { letter: 'R', number: 11 },
+];
+
+/**
+ * Spiral order of the 19 hex indices (see HEX_COORDS): outer ring clockwise
+ * from the top hex, then middle ring, then center. Used for A–R placement.
+ */
+export const HEX_SPIRAL_ORDER = [
+  0, 1, 2, 6, 11, 15, 18, 17, 16, 12, 7, 3, // outer 12
+  4, 5, 10, 14, 13, 8, // middle 6
+  9, // center
+];
+
 /** Dice ways out of 36 for each number token */
 export const NUMBER_PIPS = {
   2: 1,
@@ -110,37 +145,37 @@ export const MAP_MODES = {
   balanced: {
     id: 'balanced',
     label: '經典平衡',
-    desc: '有沙漠，資源分散，6/8 唔相鄰，產出較公平',
+    desc: '資源分散；數字按 A–R 螺旋放置（沙漠跳過）',
     noDesert: false,
   },
   noDesert: {
     id: 'noDesert',
     label: '無沙漠',
-    desc: '沙漠換成資源格，全部地塊都有號碼',
+    desc: '沙漠換成資源格；數字仍按 A–R 螺旋',
     noDesert: true,
   },
   beginner: {
     id: 'beginner',
     label: '新手友善',
-    desc: '沙漠置中、資源極分散、號碼最平衡',
+    desc: '沙漠置中、資源極分散；數字 A–R 螺旋',
     noDesert: false,
   },
   clustered: {
     id: 'clustered',
     label: '資源聚集',
-    desc: '同類資源傾向連成一片，策略性更強',
+    desc: '同類資源連成一片；數字 A–R 螺旋',
     noDesert: false,
   },
   random: {
     id: 'random',
-    label: '完全隨機',
-    desc: '資源同號碼盡量隨機（仍避免 6/8 相鄰）',
+    label: '資源隨機',
+    desc: '地形隨機；數字仍按官方 A–R 螺旋（沙漠跳過）',
     noDesert: false,
   },
   wild: {
     id: 'wild',
     label: '狂野無沙漠',
-    desc: '無沙漠 + 完全隨機號碼（僅修 6/8）',
+    desc: '無沙漠 + 地形隨機；數字 A–R + 多一格',
     noDesert: true,
   },
 };

@@ -455,12 +455,12 @@ function humanPlayDev(index) {
 
 // ——— Start screen helpers ———
 const MAP_DESCS = {
-  balanced: '有沙漠，資源分散，6/8 唔相鄰，產出較公平',
-  noDesert: '沙漠換成資源格，全部地塊都有號碼',
-  beginner: '沙漠置中、資源極分散、號碼最平衡',
-  clustered: '同類資源傾向連成一片，策略性更強',
-  random: '資源同號碼盡量隨機（仍避免 6/8 相鄰）',
-  wild: '無沙漠 + 完全隨機號碼（僅修 6/8）',
+  balanced: '資源分散；數字按官方 A–R 螺旋放置（沙漠跳過）',
+  noDesert: '沙漠換成資源格；數字仍按 A–R 螺旋',
+  beginner: '沙漠置中、資源極分散；數字 A–R 螺旋（固定起點）',
+  clustered: '同類資源連成一片；數字 A–R 螺旋',
+  random: '地形隨機；數字仍按官方 A–R 螺旋（沙漠跳過）',
+  wild: '無沙漠 + 地形隨機；數字 A–R + 多一格',
 };
 
 function updateMapDesc() {
