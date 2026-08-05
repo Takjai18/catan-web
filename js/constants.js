@@ -117,13 +117,21 @@ export const NUMBER_LETTERS = [
 ];
 
 /**
- * Spiral order of the 19 hex indices (see HEX_COORDS): outer ring clockwise
- * from the top hex, then middle ring, then center. Used for A–R placement.
+ * Official Catan number-token spiral (indices into HEX_COORDS):
+ * Start at a corner of the island, go **counter-clockwise** around the outer
+ * ring, then the middle ring, then the center. Place tokens A→R in this order;
+ * skip desert. (Whole-board 60° rotation = start at a different corner.)
+ *
+ *   Visual (pointy-top, north up) starting at top corner (0,-2):
+ *   outer CCW: top → NW → W → SW → S → SE → E → NE …
  */
 export const HEX_SPIRAL_ORDER = [
-  0, 1, 2, 6, 11, 15, 18, 17, 16, 12, 7, 3, // outer 12
-  4, 5, 10, 14, 13, 8, // middle 6
-  9, // center
+  // outer 12 — CCW from top corner (0,-2)
+  0, 3, 7, 12, 16, 17, 18, 15, 11, 6, 2, 1,
+  // middle 6 — continue CCW inward
+  5, 4, 8, 13, 14, 10,
+  // center
+  9,
 ];
 
 /** Dice ways out of 36 for each number token */
@@ -145,37 +153,37 @@ export const MAP_MODES = {
   balanced: {
     id: 'balanced',
     label: '經典平衡',
-    desc: '資源分散；數字按 A–R 螺旋放置（沙漠跳過）',
+    desc: '資源分散；數字由角落 A→R 逆時針螺旋（沙漠跳過）',
     noDesert: false,
   },
   noDesert: {
     id: 'noDesert',
     label: '無沙漠',
-    desc: '沙漠換成資源格；數字仍按 A–R 螺旋',
+    desc: '沙漠換成資源格；數字由角落 A→R 逆時針螺旋',
     noDesert: true,
   },
   beginner: {
     id: 'beginner',
     label: '新手友善',
-    desc: '沙漠置中、資源極分散；數字 A–R 螺旋',
+    desc: '沙漠置中、資源極分散；數字 A→R 逆時針螺旋',
     noDesert: false,
   },
   clustered: {
     id: 'clustered',
     label: '資源聚集',
-    desc: '同類資源連成一片；數字 A–R 螺旋',
+    desc: '同類資源連成一片；數字 A→R 逆時針螺旋',
     noDesert: false,
   },
   random: {
     id: 'random',
     label: '資源隨機',
-    desc: '地形隨機；數字仍按官方 A–R 螺旋（沙漠跳過）',
+    desc: '地形隨機；數字由角落 A→R 逆時針螺旋（沙漠跳過）',
     noDesert: false,
   },
   wild: {
     id: 'wild',
     label: '狂野無沙漠',
-    desc: '無沙漠 + 地形隨機；數字 A–R + 多一格',
+    desc: '無沙漠 + 地形隨機；數字 A→R 逆時針 + 多一格',
     noDesert: true,
   },
 };

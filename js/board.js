@@ -165,9 +165,13 @@ function rot60n(q, r, times) {
 }
 
 /**
- * Official Catan number placement: walk the board spiral A→R,
- * skip desert, place the next letter token on each land hex.
- * Random start = whole-board 60° rotations (keeps official 6/8 spacing).
+ * Official Catan number placement:
+ * 1. Start at one corner of the island
+ * 2. Place tokens A → R in alphabetical order
+ * 3. Spiral **counter-clockwise** toward the center
+ * 4. Skip the desert (no token; continue with the next letter on the next land)
+ *
+ * Random start = whole-board 60° rotations (pick any corner as A; keeps A–R spacing).
  * @returns {{ numbers: (number|null)[], letters: (string|null)[] }}
  */
 function placeNumbersAlphabet(types, { randomStart = true } = {}) {
@@ -181,30 +185,20 @@ function placeNumbersAlphabet(types, { randomStart = true } = {}) {
     indexByKey[`${c.q},${c.r}`] = i;
   });
 
-  // Optional: rotate entire spiral geometry 0–5 times (any corner can be "A")
+  // Rotate entire spiral 0–5 × 60° so "A" starts at a random outer corner
+  // (official: "start at any corner"). Direction stays counter-clockwise.
   const turns = randomStart ? Math.floor(Math.random() * 6) : 0;
-  // Optional mirror (counter-clockwise spiral) for variety
-  const mirror = randomStart && Math.random() < 0.5;
 
   const spiralCoords = HEX_SPIRAL_ORDER.map((idx) => {
     const base = HEX_COORDS[idx];
-    let q = base.q;
-    let r = base.r;
-    if (mirror) {
-      // Reflect over q-axis in axial: (q,r) -> (q+r, -r)
-      const mq = q + r;
-      const mr = -r;
-      q = mq;
-      r = mr;
-    }
-    return rot60n(q, r, turns);
+    return rot60n(base.q, base.r, turns);
   });
 
   let li = 0;
   for (const { q, r } of spiralCoords) {
     const hexIdx = indexByKey[`${q},${r}`];
     if (hexIdx == null) continue;
-    if (types[hexIdx] === 'desert') continue;
+    if (types[hexIdx] === 'desert') continue; // 沙漠跳過
     if (li >= NUMBER_LETTERS.length) {
       // noDesert board: 19th land hex — extra mid-pip token (not official letter)
       const extras = [3, 4, 5, 9, 10, 11];
@@ -229,12 +223,10 @@ function placeNumbersAlphabet(types, { randomStart = true } = {}) {
 }
 
 /**
- * Assign number tokens.
- * Default: official A–R alphabetical spiral (desert skipped).
- * Only used for layout metadata; terrain still varies by map mode.
+ * Assign number tokens — always official A–R counter-clockwise spiral.
  */
 function placeNumbers(types, modeId = 'balanced') {
-  // Official variable setup: terrain random/balanced, numbers always A–R spiral
+  // beginner: fixed corner start; other modes: random corner (still CCW A–R)
   return placeNumbersAlphabet(types, { randomStart: modeId !== 'beginner' });
 }
 

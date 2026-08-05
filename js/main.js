@@ -455,12 +455,12 @@ function humanPlayDev(index) {
 
 // ——— Start screen helpers ———
 const MAP_DESCS = {
-  balanced: '資源分散；數字按官方 A–R 螺旋放置（沙漠跳過）',
-  noDesert: '沙漠換成資源格；數字仍按 A–R 螺旋',
-  beginner: '沙漠置中、資源極分散；數字 A–R 螺旋（固定起點）',
-  clustered: '同類資源連成一片；數字 A–R 螺旋',
-  random: '地形隨機；數字仍按官方 A–R 螺旋（沙漠跳過）',
-  wild: '無沙漠 + 地形隨機；數字 A–R + 多一格',
+  balanced: '資源分散；由島嶼角落開始 A→R 逆時針螺旋放數字（沙漠跳過）',
+  noDesert: '沙漠換成資源格；數字同樣 A→R 逆時針螺旋',
+  beginner: '沙漠置中、資源極分散；A→R 逆時針螺旋（固定起點）',
+  clustered: '同類資源連成一片；A→R 逆時針螺旋放數字',
+  random: '地形隨機；數字由角落 A→R 逆時針螺旋（沙漠跳過）',
+  wild: '無沙漠 + 地形隨機；A→R 逆時針 + 多一格',
 };
 
 function updateMapDesc() {
