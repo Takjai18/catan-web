@@ -63,6 +63,13 @@ export const COSTS = {
   dev: { sheep: 1, wheat: 1, ore: 1 },
 };
 
+/** Official bank size per resource (Catan base game) */
+export const BANK_SIZE = 19;
+
+/** Official player count for base game */
+export const MIN_PLAYERS = 3;
+export const MAX_PLAYERS = 4;
+
 export const PLAYER_COLORS = [
   { id: 'red', name: '紅', hex: '#ff3b30', dark: '#a93226' },
   { id: 'blue', name: '藍', hex: '#1e90ff', dark: '#1a5276' },
@@ -126,12 +133,53 @@ export const NUMBER_LETTERS = [
  *   outer CCW: top → NW → W → SW → S → SE → E → NE …
  */
 export const HEX_SPIRAL_ORDER = [
-  // outer 12 — CCW from top corner (0,-2)
+  // outer 12 — counter-clockwise from top corner (0,-2)
   0, 3, 7, 12, 16, 17, 18, 15, 11, 6, 2, 1,
-  // middle 6 — continue CCW inward
-  5, 4, 8, 13, 14, 10,
-  // center
+  // middle 6 — continue CCW toward center (path chosen so A–R never puts 6 beside 8)
+  4, 5, 10, 14, 13, 8,
+  // center (desert in official variable setup)
   9,
+];
+
+/**
+ * Official “Starting Set-up for Beginners” (rulebook map).
+ * Order matches HEX_COORDS. Desert fixed at center; numbers fixed on hexes.
+ */
+export const BEGINNER_BOARD = [
+  { type: 'ore', number: 10 },
+  { type: 'sheep', number: 2 },
+  { type: 'wood', number: 9 },
+  { type: 'wheat', number: 12 },
+  { type: 'brick', number: 6 },
+  { type: 'sheep', number: 4 },
+  { type: 'brick', number: 10 },
+  { type: 'wheat', number: 9 },
+  { type: 'wood', number: 11 },
+  { type: 'desert', number: null },
+  { type: 'wood', number: 3 },
+  { type: 'ore', number: 8 },
+  { type: 'wood', number: 8 },
+  { type: 'ore', number: 3 },
+  { type: 'wheat', number: 4 },
+  { type: 'sheep', number: 5 },
+  { type: 'brick', number: 5 },
+  { type: 'wheat', number: 6 },
+  { type: 'sheep', number: 11 },
+];
+
+/**
+ * Official harbor types clockwise around the island frame.
+ */
+export const OFFICIAL_PORT_TYPES = [
+  { ratio: 3, resource: null },
+  { ratio: 2, resource: 'sheep' },
+  { ratio: 3, resource: null },
+  { ratio: 2, resource: 'ore' },
+  { ratio: 3, resource: null },
+  { ratio: 2, resource: 'wheat' },
+  { ratio: 3, resource: null },
+  { ratio: 2, resource: 'brick' },
+  { ratio: 2, resource: 'wood' },
 ];
 
 /** Dice ways out of 36 for each number token */
@@ -150,41 +198,29 @@ export const NUMBER_PIPS = {
 
 /** Map presets shown on start screen */
 export const MAP_MODES = {
-  balanced: {
-    id: 'balanced',
-    label: '經典平衡',
-    desc: '資源分散；數字由角落 A→R 逆時針螺旋（沙漠跳過）',
-    noDesert: false,
-  },
-  noDesert: {
-    id: 'noDesert',
-    label: '無沙漠',
-    desc: '沙漠換成資源格；數字由角落 A→R 逆時針螺旋',
-    noDesert: true,
-  },
   beginner: {
     id: 'beginner',
-    label: '新手友善',
-    desc: '沙漠置中、資源極分散；數字 A→R 逆時針螺旋',
+    label: '新手固定全圖',
+    desc: '正版「新手開局」：固定地形＋數字，沙漠在中心',
+    noDesert: false,
+  },
+  balanced: {
+    id: 'balanced',
+    label: '經典可變',
+    desc: '沙漠置中、資源分散；數字 A→R 逆時針螺旋',
+    noDesert: false,
+  },
+  random: {
+    id: 'random',
+    label: '地形隨機',
+    desc: '沙漠置中、其餘地形打亂；數字 A→R 逆時針螺旋',
     noDesert: false,
   },
   clustered: {
     id: 'clustered',
     label: '資源聚集',
-    desc: '同類資源連成一片；數字 A→R 逆時針螺旋',
+    desc: '沙漠置中、同類資源傾向相連；數字 A→R 逆時針螺旋',
     noDesert: false,
-  },
-  random: {
-    id: 'random',
-    label: '資源隨機',
-    desc: '地形隨機；數字由角落 A→R 逆時針螺旋（沙漠跳過）',
-    noDesert: false,
-  },
-  wild: {
-    id: 'wild',
-    label: '狂野無沙漠',
-    desc: '無沙漠 + 地形隨機；數字 A→R 逆時針 + 多一格',
-    noDesert: true,
   },
 };
 

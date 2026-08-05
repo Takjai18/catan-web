@@ -38,12 +38,28 @@ export function renderAll(game, handlers) {
   renderPlayers(game);
   renderBoard(game, handlers);
   renderResources(game);
+  renderBank(game);
   renderDevCards(game, handlers);
   renderActions(game, handlers);
   renderPhase(game);
   renderDice(game);
   renderLog(game);
   renderSpecials(game);
+}
+
+function renderBank(game) {
+  const root = el('bank-stocks');
+  if (!root || !game.bank) return;
+  root.innerHTML = RESOURCES.map((r) => {
+    const n = game.bank[r] ?? 0;
+    const low = n <= 4 ? ' bank-low' : '';
+    return `
+    <div class="res-chip${low}">
+      <span class="res-dot" style="background:${RES_COLOR[r]}"></span>
+      <span>${RES_EMOJI[r]}</span>
+      <span class="count">${n}</span>
+    </div>`;
+  }).join('');
 }
 
 function renderSpecials(game) {

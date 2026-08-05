@@ -219,8 +219,8 @@ async function afterHumanAction() {
 function startGame() {
   const humanCount = +el('human-count').value || 1;
   let aiCount = +el('ai-count').value;
-  // Clamp total 2–4
-  if (humanCount + aiCount < 2) aiCount = 2 - humanCount;
+  // Official: 3–4 players
+  if (humanCount + aiCount < 3) aiCount = 3 - humanCount;
   if (humanCount + aiCount > 4) aiCount = Math.max(0, 4 - humanCount);
 
   const nameInputs = document.querySelectorAll('.human-name-input');
@@ -455,12 +455,10 @@ function humanPlayDev(index) {
 
 // ——— Start screen helpers ———
 const MAP_DESCS = {
-  balanced: '資源分散；由島嶼角落開始 A→R 逆時針螺旋放數字（沙漠跳過）',
-  noDesert: '沙漠換成資源格；數字同樣 A→R 逆時針螺旋',
-  beginner: '沙漠置中、資源極分散；A→R 逆時針螺旋（固定起點）',
-  clustered: '同類資源連成一片；A→R 逆時針螺旋放數字',
-  random: '地形隨機；數字由角落 A→R 逆時針螺旋（沙漠跳過）',
-  wild: '無沙漠 + 地形隨機；A→R 逆時針 + 多一格',
+  beginner: '正版「新手開局」：固定地形＋數字，沙漠在中心',
+  balanced: '沙漠置中、資源分散；數字 A→R 逆時針螺旋',
+  random: '沙漠置中、其餘地形打亂；數字 A→R 逆時針螺旋',
+  clustered: '沙漠置中、同類資源傾向相連；數字 A→R 逆時針螺旋',
 };
 
 function updateMapDesc() {
@@ -472,15 +470,14 @@ function updateMapDesc() {
 function updatePlayerSetup() {
   const humanCount = +el('human-count').value || 1;
   const aiSel = el('ai-count');
-  // Disable invalid AI options so total stays 2–4
+  // Official base game: 3–4 players total
   [...aiSel.options].forEach((opt) => {
     const ai = +opt.value;
     const total = humanCount + ai;
-    opt.disabled = total < 2 || total > 4;
+    opt.disabled = total < 3 || total > 4;
   });
-  // Fix selection if invalid
   let aiCount = +aiSel.value;
-  if (humanCount + aiCount < 2 || humanCount + aiCount > 4) {
+  if (humanCount + aiCount < 3 || humanCount + aiCount > 4) {
     const valid = [...aiSel.options].find((o) => !o.disabled);
     if (valid) {
       aiSel.value = valid.value;
@@ -489,7 +486,7 @@ function updatePlayerSetup() {
   }
 
   const total = humanCount + aiCount;
-  el('player-total-hint').textContent = `共 ${total} 名玩家（${humanCount} 人類 + ${aiCount} AI）`;
+  el('player-total-hint').textContent = `共 ${total} 名玩家（${humanCount} 人類 + ${aiCount} AI）· 正版 3–4 人`;
 
   const box = el('human-names');
   box.innerHTML = '';

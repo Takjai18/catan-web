@@ -6,12 +6,13 @@
 import {
   HEX_COORDS,
   getTileTypes,
-  getNumberTokens,
   RES_COLOR,
   MAP_MODES,
   NUMBER_PIPS as CONST_PIPS,
   NUMBER_LETTERS,
   HEX_SPIRAL_ORDER,
+  BEGINNER_BOARD,
+  OFFICIAL_PORT_TYPES,
 } from './constants.js';
 
 const HEX_SIZE = 54;
@@ -87,25 +88,50 @@ function neighborIndices() {
 const HEX_ADJ = neighborIndices();
 
 /**
- * Place terrain according to map mode.
- * modes: balanced | noDesert | beginner | clustered | random | wild
+ * Place terrain. Official base modes keep desert at center (index 9).
  */
 function placeTerrainTypes(modeId = 'balanced') {
-  const mode = MAP_MODES[modeId] || MAP_MODES.balanced;
-  const noDesert = mode.noDesert;
-  const baseTypes = getTileTypes(noDesert);
-
-  // Pure random / wild: single shuffle
-  if (modeId === 'random' || modeId === 'wild') {
-    return shuffle(baseTypes);
+  if (modeId === 'beginner') {
+    return BEGINNER_BOARD.map((t) => t.type);
   }
 
+  // Build array in HEX_COORDS index order with desert fixed at center (index 9)
+  function withCenterDesert(land18) {
+    const types = new Array(19);
+    let k = 0;
+    for (let i = 0; i < 19; i++) {
+      if (i === 9) types[i] = 'desert';
+      else types[i] = land18[k++];
+    }
+    return types;
+  }
+
+  if (modeId === 'random') {
+    return withCenterDesert(
+      shuffle([
+        ...Array(4).fill('wood'),
+        ...Array(3).fill('brick'),
+        ...Array(4).fill('sheep'),
+        ...Array(4).fill('wheat'),
+        ...Array(3).fill('ore'),
+      ])
+    );
+  }
+
+  // balanced / clustered: score land placement around fixed desert
   let best = null;
   let bestScore = -Infinity;
-  const attempts = modeId === 'beginner' ? 120 : 80;
+  const attempts = 100;
 
   for (let attempt = 0; attempt < attempts; attempt++) {
-    const types = shuffle(baseTypes);
+    const land = shuffle([
+      ...Array(4).fill('wood'),
+      ...Array(3).fill('brick'),
+      ...Array(4).fill('sheep'),
+      ...Array(4).fill('wheat'),
+      ...Array(3).fill('ore'),
+    ]);
+    const types = withCenterDesert(land);
     let score = 0;
 
     for (let i = 0; i < types.length; i++) {
@@ -114,29 +140,17 @@ function placeTerrainTypes(modeId = 'balanced') {
       for (const j of HEX_ADJ[i]) {
         if (types[j] === types[i]) sameN++;
       }
-
       if (modeId === 'clustered') {
-        // Prefer same-type neighbours (resource regions)
         if (sameN === 0) score -= 2;
         else if (sameN === 1) score += 3;
         else if (sameN === 2) score += 6;
         else score += 4;
       } else {
-        // balanced / beginner / noDesert: anti-cluster
-        const weight = modeId === 'beginner' ? 1.5 : 1;
-        if (sameN === 0) score += 2 * weight;
-        else if (sameN === 1) score += 1 * weight;
-        else if (sameN === 2) score -= 3 * weight;
-        else score -= 8 * weight;
+        if (sameN === 0) score += 2;
+        else if (sameN === 1) score += 1;
+        else if (sameN === 2) score -= 3;
+        else score -= 8;
       }
-    }
-
-    const desertIdx = types.indexOf('desert');
-    if (desertIdx === 9) {
-      // Centre desert: classic / beginner preferred
-      score += modeId === 'beginner' ? 8 : 0.5;
-    } else if (modeId === 'beginner' && desertIdx >= 0) {
-      score -= 4; // prefer centre desert for beginners
     }
 
     if (score > bestScore) {
@@ -223,11 +237,27 @@ function placeNumbersAlphabet(types, { randomStart = true } = {}) {
 }
 
 /**
- * Assign number tokens — always official A–R counter-clockwise spiral.
+ * Assign number tokens.
+ * beginner: fixed numbers from BEGINNER_BOARD
+ * else: A→R counter-clockwise spiral, desert skipped (center desert ⇒ no 6/8 clash)
  */
 function placeNumbers(types, modeId = 'balanced') {
-  // beginner: fixed corner start; other modes: random corner (still CCW A–R)
-  return placeNumbersAlphabet(types, { randomStart: modeId !== 'beginner' });
+  if (modeId === 'beginner') {
+    const numbers = BEGINNER_BOARD.map((t) => t.number);
+    const letters = numbers.map((n) => {
+      if (n == null) return null;
+      // Optional letter label if unique match in A–R (display only)
+      const hit = NUMBER_LETTERS.find((x) => x.number === n);
+      return hit ? hit.letter : null;
+    });
+    // Beginner numbers aren't placed via A–R path — clear letters to avoid misleading A–R path
+    return {
+      numbers,
+      letters: numbers.map(() => null),
+    };
+  }
+  // Desert is always center in official modes → A–R spiral is stable
+  return placeNumbersAlphabet(types, { randomStart: true });
 }
 
 function scoreNumberLayout(types, assign, opts = {}) {
@@ -494,52 +524,59 @@ function edgeId(a, b) {
 export { edgeId };
 
 /**
- * Place 9 ports around the coast on pairs of adjacent coastal vertices.
+ * Official harbor frame: 9 ports in fixed clockwise order around the island.
+ * Positions are geometric (coastal edges by angle), types from OFFICIAL_PORT_TYPES.
  */
 function assignPorts(vertices, edges, tiles) {
-  // Coastal edges: exactly one land tile
   const coastalEdges = Object.values(edges).filter((e) => e.tiles.length === 1);
 
-  // Group into a rough perimeter order by angle from center
-  const edgeMid = (e) => {
+  const mids = coastalEdges.map((e) => {
     const va = vertices[e.a];
     const vb = vertices[e.b];
-    return { x: (va.x + vb.x) / 2, y: (va.y + vb.y) / 2, e };
-  };
-
-  const mids = coastalEdges.map(edgeMid);
-  mids.sort((p, q) => {
-    const aa = Math.atan2(p.y - ORIGIN_Y, p.x - ORIGIN_X);
-    const ab = Math.atan2(q.y - ORIGIN_Y, q.x - ORIGIN_X);
-    return aa - ab;
+    return {
+      e,
+      ang: Math.atan2((va.y + vb.y) / 2 - ORIGIN_Y, (va.x + vb.x) / 2 - ORIGIN_X),
+    };
   });
+  mids.sort((a, b) => a.ang - b.ang);
 
-  // Pick every ~2nd coastal edge for ports (9 ports)
-  const portDefs = [
-    { ratio: 3, resource: null },
-    { ratio: 2, resource: 'wood' },
-    { ratio: 3, resource: null },
-    { ratio: 2, resource: 'brick' },
-    { ratio: 3, resource: null },
-    { ratio: 2, resource: 'sheep' },
-    { ratio: 3, resource: null },
-    { ratio: 2, resource: 'wheat' },
-    { ratio: 2, resource: 'ore' },
-  ];
-
-  const step = Math.max(1, Math.floor(mids.length / portDefs.length));
+  // Fixed angular slots: divide the coast into 9 equal sectors (official frame spacing)
+  const n = mids.length;
   const usedVerts = new Set();
-  let pi = 0;
+  let placed = 0;
 
-  for (let i = 0; i < mids.length && pi < portDefs.length; i += step) {
-    const { e } = mids[i];
-    if (usedVerts.has(e.a) || usedVerts.has(e.b)) continue;
-    const def = portDefs[pi++];
-    vertices[e.a].port = { ...def };
-    vertices[e.b].port = { ...def };
-    usedVerts.add(e.a);
-    usedVerts.add(e.b);
-    e.port = def;
+  for (let p = 0; p < OFFICIAL_PORT_TYPES.length; p++) {
+    // Target angle for this harbor (evenly around the circle, offset so top is first)
+    const targetAng = -Math.PI / 2 + (p * 2 * Math.PI) / OFFICIAL_PORT_TYPES.length;
+    // Find coastal edge nearest this angle that doesn't reuse vertices
+    let best = null;
+    let bestDiff = Infinity;
+    for (const m of mids) {
+      if (usedVerts.has(m.e.a) || usedVerts.has(m.e.b)) continue;
+      let d = Math.abs(m.ang - targetAng);
+      if (d > Math.PI) d = 2 * Math.PI - d;
+      if (d < bestDiff) {
+        bestDiff = d;
+        best = m;
+      }
+    }
+    if (!best) {
+      // fallback: first free edge
+      best = mids.find((m) => !usedVerts.has(m.e.a) && !usedVerts.has(m.e.b));
+    }
+    if (!best) break;
+
+    const def = { ...OFFICIAL_PORT_TYPES[p] };
+    vertices[best.e.a].port = { ...def };
+    vertices[best.e.b].port = { ...def };
+    best.e.port = def;
+    usedVerts.add(best.e.a);
+    usedVerts.add(best.e.b);
+    placed++;
+  }
+
+  if (placed < OFFICIAL_PORT_TYPES.length) {
+    console.warn('Port placement: only placed', placed, 'of', OFFICIAL_PORT_TYPES.length);
   }
 }
 

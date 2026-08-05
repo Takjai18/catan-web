@@ -631,6 +631,28 @@ body {
   gap: 6px;
 }
 
+.bank-stocks {
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+}
+
+.bank-stocks .res-chip {
+  flex-direction: column;
+  padding: 6px 4px;
+  font-size: 0.75rem;
+  gap: 2px;
+}
+
+.bank-stocks .count {
+  margin-left: 0;
+  font-size: 0.9rem;
+}
+
+.bank-stocks .bank-low {
+  border: 1px solid rgba(232, 93, 76, 0.5);
+  background: rgba(232, 93, 76, 0.12);
+}
+
 .res-chip {
   display: flex;
   align-items: center;

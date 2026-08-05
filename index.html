@@ -36,7 +36,7 @@
               <option value="3">3 個 AI</option>
             </select>
           </label>
-          <p id="player-total-hint" class="map-mode-desc">共 3 名玩家（1 人類 + 2 AI）</p>
+          <p id="player-total-hint" class="map-mode-desc">共 3 名玩家（1 人類 + 2 AI）· 正版 3–4 人</p>
           <div id="human-names" class="human-names">
             <label>玩家 1 名字
               <input class="human-name-input" data-idx="0" type="text" value="玩家1" maxlength="12" />
@@ -45,18 +45,16 @@
           <label>
             地圖模式
             <select id="map-mode">
-              <option value="balanced" selected>經典平衡</option>
-              <option value="noDesert">無沙漠</option>
-              <option value="beginner">新手友善</option>
+              <option value="beginner" selected>新手固定全圖</option>
+              <option value="balanced">經典可變</option>
+              <option value="random">地形隨機</option>
               <option value="clustered">資源聚集</option>
-              <option value="random">完全隨機</option>
-              <option value="wild">狂野無沙漠</option>
             </select>
           </label>
-          <p id="map-mode-desc" class="map-mode-desc">有沙漠，資源分散，6/8 唔相鄰，產出較公平</p>
+          <p id="map-mode-desc" class="map-mode-desc">正版「新手開局」：固定地形＋數字，沙漠在中心</p>
         </div>
         <button id="btn-start" class="btn primary big">開始遊戲</button>
-        <p class="hint">多人為<strong>熱座模式</strong>（同一裝置輪流操作）。回合中可與其他玩家交易。達到 <strong>10 分</strong> 勝利。</p>
+        <p class="hint">正版基礎規則：3–4 人、資源銀行每種 19 張。多人為<strong>熱座</strong>。達到 <strong>10 分</strong> 勝利。</p>
       </div>
     </div>
 
@@ -98,6 +96,8 @@
         <aside class="panel actions-panel">
           <h2 id="hand-title">目前玩家資源</h2>
           <div id="resources" class="resources"></div>
+          <h2>銀行庫存</h2>
+          <div id="bank-stocks" class="resources bank-stocks"></div>
 
           <h2>發展卡 <span id="dev-count" class="muted">(0)</span></h2>
           <div id="dev-cards" class="dev-cards"></div>
@@ -153,7 +153,7 @@
         </div>
 
         <div id="trade-player-panel" class="hidden">
-          <p class="muted">經典規則：雙方同意即可，比例任意。對方是人類時需交機確認。</p>
+          <p class="muted">雙方同意即可，比例任意；可單向贈送。對方是人類時需交機確認。</p>
           <label>交易對象
             <select id="trade-partner"></select>
           </label>

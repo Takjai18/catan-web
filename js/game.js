@@ -13,6 +13,9 @@ import {
   MAX_ROADS,
   MAX_SETTLEMENTS,
   MAX_CITIES,
+  BANK_SIZE,
+  MIN_PLAYERS,
+  MAX_PLAYERS,
 } from './constants.js';
 import {
   generateBoard,
@@ -26,6 +29,16 @@ import {
 
 export function createEmptyResources() {
   return { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+}
+
+export function createFullBank() {
+  return {
+    wood: BANK_SIZE,
+    brick: BANK_SIZE,
+    sheep: BANK_SIZE,
+    wheat: BANK_SIZE,
+    ore: BANK_SIZE,
+  };
 }
 
 export function totalResources(res) {
@@ -48,6 +61,51 @@ export function addRes(res, gain) {
   return next;
 }
 
+/** Return resources from player to bank (building costs, discards) */
+export function returnToBank(game, cost) {
+  for (const [r, n] of Object.entries(cost)) {
+    if (n > 0) game.bank[r] = (game.bank[r] || 0) + n;
+  }
+}
+
+/**
+ * Take resources from bank into a gain map if possible.
+ * Official: if bank cannot supply the full amount of a resource type for production,
+ * no one receives that resource type this roll.
+ * @returns {{ ok: boolean, taken: object }}
+ */
+export function takeFromBank(game, amountByRes) {
+  const taken = createEmptyResources();
+  for (const r of RESOURCES) {
+    const need = amountByRes[r] || 0;
+    if (need <= 0) continue;
+    if ((game.bank[r] || 0) < need) {
+      return { ok: false, taken: createEmptyResources(), short: r };
+    }
+  }
+  for (const r of RESOURCES) {
+    const need = amountByRes[r] || 0;
+    if (need > 0) {
+      game.bank[r] -= need;
+      taken[r] = need;
+    }
+  }
+  return { ok: true, taken };
+}
+
+/** Take as many as available (for Year of Plenty — take up to requested) */
+export function takeFromBankPartial(game, amountByRes) {
+  const taken = createEmptyResources();
+  for (const r of RESOURCES) {
+    const need = amountByRes[r] || 0;
+    if (need <= 0) continue;
+    const got = Math.min(need, game.bank[r] || 0);
+    game.bank[r] -= got;
+    taken[r] = got;
+  }
+  return taken;
+}
+
 /**
  * @param {{
  *   name?: string,
@@ -65,16 +123,17 @@ export function createGame(opts) {
   });
 
   let humanCount = opts.humanCount != null ? +opts.humanCount : 1;
-  let aiCount = opts.aiCount != null ? +opts.aiCount : 0;
+  let aiCount = opts.aiCount != null ? +opts.aiCount : 2;
   humanCount = Math.max(1, Math.min(4, humanCount));
   aiCount = Math.max(0, Math.min(3, aiCount));
+  // Official base game: 3–4 players
   let totalPlayers = humanCount + aiCount;
-  if (totalPlayers < 2) {
-    aiCount = 1;
+  if (totalPlayers < MIN_PLAYERS) {
+    aiCount = MIN_PLAYERS - humanCount;
     totalPlayers = humanCount + aiCount;
   }
-  if (totalPlayers > 4) {
-    aiCount = Math.max(0, 4 - humanCount);
+  if (totalPlayers > MAX_PLAYERS) {
+    aiCount = Math.max(0, MAX_PLAYERS - humanCount);
     totalPlayers = humanCount + aiCount;
   }
 
@@ -117,6 +176,7 @@ export function createGame(opts) {
     board,
     players,
     humanCount,
+    bank: createFullBank(),
     currentPlayer: 0,
     phase: 'setup', // setup | roll | main | robber | discard | roadBuilding | gameover
     setupIndex: 0, // 0..2*n-1 snake order
@@ -300,23 +360,26 @@ export function placeSettlement(game, vertexId) {
     if (p.settlements >= MAX_SETTLEMENTS) return { ok: false, error: '村莊已達上限' };
     if (!canAfford(p.resources, COSTS.settlement)) return { ok: false, error: '資源不足' };
     p.resources = pay(p.resources, COSTS.settlement);
+    returnToBank(game, COSTS.settlement);
   }
 
   game.board.vertices[vertexId].building = { playerId: pid, type: 'settlement' };
   p.settlements++;
 
   if (isSetup) {
-    // Second settlement (setup index >= n) gets starting resources
+    // Second settlement (setup index >= n) gets starting resources from bank
     const n = game.players.length;
     if (game.setupIndex >= n) {
       const v = game.board.vertices[vertexId];
-      const gain = createEmptyResources();
+      const want = createEmptyResources();
       for (const tid of v.tiles) {
         const t = game.board.tiles[tid];
-        if (t.type !== 'desert') gain[t.type]++;
+        if (t.type !== 'desert') want[t.type]++;
       }
-      p.resources = addRes(p.resources, gain);
-      const parts = RESOURCES.filter((r) => gain[r] > 0).map((r) => `${RES_LABEL[r]}×${gain[r]}`);
+      // Starting resources: take what the bank can give (normally full)
+      const taken = takeFromBankPartial(game, want);
+      p.resources = addRes(p.resources, taken);
+      const parts = RESOURCES.filter((r) => taken[r] > 0).map((r) => `${RES_LABEL[r]}×${taken[r]}`);
       if (parts.length) log(game, `${p.name} 起始資源：${parts.join('、')}`, { gain: true });
     }
     game.setupLastVertex = vertexId;
@@ -348,6 +411,7 @@ export function placeRoad(game, edgeIdStr) {
   if (!isSetup && !free) {
     if (!canAfford(p.resources, COSTS.road)) return { ok: false, error: '資源不足' };
     p.resources = pay(p.resources, COSTS.road);
+    returnToBank(game, COSTS.road);
   }
 
   game.board.edges[edgeIdStr].road = pid;
@@ -480,6 +544,7 @@ export function upgradeCity(game, vertexId) {
   if (!canAfford(p.resources, COSTS.city)) return { ok: false, error: '資源不足' };
 
   p.resources = pay(p.resources, COSTS.city);
+  returnToBank(game, COSTS.city);
   v.building.type = 'city';
   p.settlements--;
   p.cities++;
@@ -534,6 +599,22 @@ function distributeResources(game, number) {
       gains[v.building.playerId][tile.type] += amt;
     }
   }
+
+  // Official bank rule: for each resource type, if the bank cannot pay the full
+  // total owed this roll, NO player receives that resource type.
+  for (const r of RESOURCES) {
+    const totalNeed = gains.reduce((s, g) => s + (g[r] || 0), 0);
+    if (totalNeed <= 0) continue;
+    if ((game.bank[r] || 0) < totalNeed) {
+      log(game, `銀行的${RES_LABEL[r]}不足（需要 ${totalNeed}，剩 ${game.bank[r]}），本回合無人獲得${RES_LABEL[r]}`, {
+        important: true,
+      });
+      for (const g of gains) g[r] = 0;
+    } else {
+      game.bank[r] -= totalNeed;
+    }
+  }
+
   for (let i = 0; i < game.players.length; i++) {
     const g = gains[i];
     const parts = RESOURCES.filter((r) => g[r] > 0).map((r) => `${RES_LABEL[r]}×${g[r]}`);
@@ -554,6 +635,7 @@ export function discardResources(game, playerId, toDiscard) {
     if ((toDiscard[r] || 0) > p.resources[r]) return { ok: false, error: '資源不足' };
   }
   p.resources = pay(p.resources, toDiscard);
+  returnToBank(game, toDiscard);
   game.discardQueue = game.discardQueue.filter((id) => id !== playerId);
   log(game, `${p.name} 丟棄了 ${need} 張資源`);
 
@@ -673,6 +755,7 @@ export function buyDevCard(game) {
   if (game.devDeck.length === 0) return { ok: false, error: '發展卡已用完' };
 
   p.resources = pay(p.resources, COSTS.dev);
+  returnToBank(game, COSTS.dev);
   const type = game.devDeck.pop();
   p.devCards.push({ type, playable: false, justBought: true });
   log(game, `${p.name} 購買了發展卡`);
@@ -739,11 +822,21 @@ export function playDevCard(game, cardIndex, extra = {}) {
     if (!picks || picks.length !== 2 || !picks.every((r) => RESOURCES.includes(r))) {
       return { ok: false, error: '請選擇 2 個資源', needPick: 'yearOfPlenty' };
     }
+    // Must be available in the bank
+    const want = createEmptyResources();
+    want[picks[0]]++;
+    want[picks[1]]++;
+    for (const r of RESOURCES) {
+      if ((want[r] || 0) > (game.bank[r] || 0)) {
+        return { ok: false, error: `銀行的${RES_LABEL[r]}不足` };
+      }
+    }
     p.devCards.splice(cardIndex, 1);
     game.turnDevPlayed = true;
-    p.resources[picks[0]]++;
-    p.resources[picks[1]]++;
-    log(game, `${p.name} 打出豐收之年，獲得 ${RES_LABEL[picks[0]]}、${RES_LABEL[picks[1]]}`, { gain: true });
+    const taken = takeFromBankPartial(game, want);
+    p.resources = addRes(p.resources, taken);
+    const parts = RESOURCES.filter((r) => taken[r] > 0).map((r) => `${RES_LABEL[r]}×${taken[r]}`);
+    log(game, `${p.name} 打出豐收之年，獲得 ${parts.join('、') || '（銀行已空）'}`, { gain: true });
     return { ok: true, type: 'yearOfPlenty' };
   }
 
@@ -774,11 +867,15 @@ export function bankTrade(game, giveRes, giveCount, getRes) {
   if (giveRes === getRes) return { ok: false, error: '不能換同種資源' };
   const rate = getTradeRate(game.board, p.id, giveRes);
   if (giveCount !== rate) {
-    // allow if giveCount matches rate
     return { ok: false, error: `此資源需 ${rate}:1 交易` };
   }
   if (p.resources[giveRes] < giveCount) return { ok: false, error: '資源不足' };
+  if ((game.bank[getRes] || 0) < 1) {
+    return { ok: false, error: `銀行沒有${RES_LABEL[getRes]}` };
+  }
   p.resources[giveRes] -= giveCount;
+  game.bank[giveRes] = (game.bank[giveRes] || 0) + giveCount;
+  game.bank[getRes]--;
   p.resources[getRes]++;
   log(game, `${p.name} 以 ${giveCount} ${RES_LABEL[giveRes]} 換 1 ${RES_LABEL[getRes]}（銀行）`);
   return { ok: true };
@@ -805,11 +902,9 @@ export function proposePlayerTrade(game, toPlayerId, give, get) {
   const from = game.players[fromId];
   const to = game.players[toPlayerId];
   if (!to || to.id === fromId) return { ok: false, error: '請選擇其他玩家' };
+  // Official play allows free gifts (one side may give 0)
   if (resMapTotal(give) === 0 && resMapTotal(get) === 0) {
-    return { ok: false, error: '請至少選擇要交換的資源' };
-  }
-  if (resMapTotal(give) === 0 || resMapTotal(get) === 0) {
-    return { ok: false, error: '雙方都要交出至少 1 張資源（不可單向贈送）' };
+    return { ok: false, error: '請至少選擇要交出或獲得的資源' };
   }
   for (const r of RESOURCES) {
     if ((give[r] || 0) > from.resources[r]) return { ok: false, error: `${from.name} 的 ${RES_LABEL[r]} 不足` };
