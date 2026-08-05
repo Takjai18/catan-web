@@ -953,7 +953,7 @@ body {
             <button id="btn-roll" class="btn primary" disabled>🎲 擲骰</button>
             <button id="btn-build-road" class="btn" disabled title="木+磚">🛤️ 建路 (木+磚)</button>
             <button id="btn-build-settlement" class="btn" disabled title="木+磚+羊+麥">🏠 建村 (木磚羊麥)</button>
-            <button id="btn-build-city" class="btn" disabled title="3麥+2礦">🏰 建城 (3麥+2礦)</button>
+            <button id="btn-build-city" class="btn" disabled title="2麥+3礦">🏰 建城 (2麥+3礦)</button>
             <button id="btn-buy-dev" class="btn" disabled title="羊+麥+礦">🃏 買發展卡</button>
             <button id="btn-trade" class="btn" disabled>💱 交易</button>
             <button id="btn-end" class="btn accent" disabled>結束回合 →</button>
@@ -1083,7 +1083,7 @@ body {
           <li><strong>目標：</strong>率先取得 10 勝利點。</li>
           <li><strong>村莊 1 分 / 城市 2 分</strong>；發展卡的勝利點卡、最長道路(+2)、最大軍隊(+2) 也計分。</li>
           <li><strong>擲骰：</strong>有村莊/城市貼著該號碼地塊的玩家獲得資源。擲出 7 會觸發強盜。</li>
-          <li><strong>建造：</strong>路(木+磚)、村莊(木+磚+羊+麥)、城市(3麥+2礦)、發展卡(羊+麥+礦)。</li>
+          <li><strong>建造：</strong>路(木+磚)、村莊(木+磚+羊+麥)、城市(2麥+3礦)、發展卡(羊+麥+礦)。</li>
           <li><strong>距離規則：</strong>兩個村莊之間至少隔一個路口。</li>
           <li><strong>銀行：</strong>預設 4 換 1；港口可 3:1 或特定 2:1。</li>
           <li><strong>玩家交易：</strong>自己回合可向其他玩家開價，雙方同意即成交（比例任意）。</li>
@@ -1172,7 +1172,7 @@ const TILE_RESOURCE_LABEL = {
 const COSTS = {
   road: { wood: 1, brick: 1 },
   settlement: { wood: 1, brick: 1, sheep: 1, wheat: 1 },
-  city: { wheat: 3, ore: 2 },
+  city: { wheat: 2, ore: 3 },
   dev: { sheep: 1, wheat: 1, ore: 1 },
 };
 

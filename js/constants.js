@@ -59,7 +59,7 @@ export const TILE_RESOURCE_LABEL = {
 export const COSTS = {
   road: { wood: 1, brick: 1 },
   settlement: { wood: 1, brick: 1, sheep: 1, wheat: 1 },
-  city: { wheat: 3, ore: 2 },
+  city: { wheat: 2, ore: 3 },
   dev: { sheep: 1, wheat: 1, ore: 1 },
 };
 
