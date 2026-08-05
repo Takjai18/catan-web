@@ -1,0 +1,4717 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>卡坦島 Catan — USB Portable</title>
+  <style>
+:root {
+  --bg: #0f1419;
+  --bg2: #1a2332;
+  --panel: #1e2a3a;
+  --panel-border: #2d3f56;
+  --text: #e8eef6;
+  --muted: #8b9cb3;
+  --accent: #f0a030;
+  --accent2: #e85d4c;
+  --good: #3dba7a;
+  --wood: #5a8f3c;
+  --brick: #c45c3e;
+  --sheep: #8bc34a;
+  --wheat: #e8c547;
+  --ore: #7a8a9a;
+  --desert: #d4b896;
+  --sea: #1a4a6e;
+  --shadow: 0 8px 32px rgba(0,0,0,.45);
+  --radius: 14px;
+  --font: "Noto Sans TC", system-ui, sans-serif;
+  --mono: "Space Grotesk", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.hidden { display: none !important; }
+
+/* ——— Screens ——— */
+.screen {
+  min-height: 100vh;
+}
+
+#start-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(240,160,48,.15), transparent 50%),
+    radial-gradient(ellipse at 70% 80%, rgba(61,186,122,.1), transparent 45%),
+    var(--bg);
+  padding: 24px;
+}
+
+.start-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 24px;
+  padding: 40px 36px;
+  max-width: 440px;
+  width: 100%;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.logo { font-size: 64px; margin-bottom: 8px; animation: float 3s ease-in-out infinite; }
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.start-card h1 {
+  font-family: var(--mono);
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.subtitle { color: var(--muted); margin: 8px 0 28px; }
+
+.start-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  margin-bottom: 24px;
+}
+
+.start-options label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+.map-mode-desc {
+  font-size: .78rem;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-top: -6px;
+  padding: 0 2px 4px;
+  text-align: left;
+}
+
+.human-names {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.trade-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.trade-tab {
+  flex: 1;
+  background: var(--bg2);
+  border: 1px solid var(--panel-border);
+  color: var(--muted);
+  padding: 10px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.trade-tab.active {
+  background: rgba(240,160,48,.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.player-trade-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 10px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+.player-trade-grid h4 {
+  font-size: .8rem;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.arrow-col {
+  padding-top: 36px;
+  font-size: 1.4rem;
+  color: var(--accent);
+}
+
+.trade-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.trade-pick-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg2);
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: .8rem;
+}
+
+.trade-stepper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trade-stepper .btn {
+  padding: 2px 10px;
+  min-width: 32px;
+}
+
+.trade-n {
+  min-width: 18px;
+  text-align: center;
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
+.trade-accept-detail {
+  margin: 12px 0;
+}
+
+.trade-accept-box {
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 14px;
+  line-height: 1.7;
+  font-size: .95rem;
+}
+
+#trade-player-panel label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+#trade-player-panel select {
+  background: var(--bg2);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 8px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.start-options input,
+.start-options select {
+  background: var(--bg2);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.hint {
+  margin-top: 20px;
+  font-size: .8rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+/* ——— Buttons ——— */
+.btn {
+  background: var(--bg2);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform .12s, background .15s, border-color .15s, opacity .15s;
+}
+
+.btn:hover:not(:disabled) {
+  background: #243447;
+  border-color: #4a6280;
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #e8952e, #d4781a);
+  border-color: transparent;
+  color: #1a1208;
+  font-weight: 700;
+}
+
+.btn.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f0a840, #e08828);
+}
+
+.btn.accent {
+  background: linear-gradient(135deg, #3dba7a, #2a9a60);
+  border-color: transparent;
+  color: #0a1a12;
+  font-weight: 700;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.big {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.05rem;
+}
+
+.btn.active-build {
+  outline: 2px solid var(--accent);
+  box-shadow: 0 0 0 4px rgba(240,160,48,.25);
+}
+
+/* ——— Game layout ——— */
+#game-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-height: 100vh;
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--panel-border);
+  flex-shrink: 0;
+}
+
+.brand {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.phase-banner {
+  background: rgba(240,160,48,.12);
+  border: 1px solid rgba(240,160,48,.35);
+  color: var(--accent);
+  padding: 6px 18px;
+  border-radius: 999px;
+  font-size: .9rem;
+  font-weight: 600;
+  max-width: 50%;
+  text-align: center;
+}
+
+.top-actions { display: flex; gap: 8px; }
+
+.game-layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 220px 1fr 260px;
+  gap: 12px;
+  padding: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--radius);
+  padding: 14px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel h2 {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.panel h2:first-child { margin-top: 0; }
+
+/* Players */
+.player-card {
+  background: var(--bg2);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border-left: 4px solid #888;
+  transition: box-shadow .2s;
+}
+
+.player-card.active {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.player-card .name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.player-card .vp {
+  font-family: var(--mono);
+  font-size: 1.1rem;
+  color: var(--accent);
+}
+
+.player-card .stats {
+  font-size: .75rem;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+}
+
+.specials {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.special-badge {
+  font-size: .8rem;
+  background: var(--bg2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+
+.special-badge.held {
+  color: var(--accent);
+  border: 1px solid rgba(240,160,48,.3);
+}
+
+/* Board */
+.board-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse at center, #163a55 0%, #0d2438 55%, #0a1a28 100%);
+  border-radius: var(--radius);
+  border: 1px solid var(--panel-border);
+  overflow: hidden;
+  min-height: 0;
+}
+
+#board-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+#board {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  filter: drop-shadow(0 4px 20px rgba(0,0,0,.4));
+}
+
+/* Hex tiles via SVG classes */
+.hex-tile { cursor: default; transition: filter .15s; }
+.hex-tile.clickable { cursor: pointer; }
+.hex-tile.clickable:hover { filter: brightness(1.15); }
+.hex-tile.robber-target { stroke: #ff4444; stroke-width: 3; cursor: pointer; animation: pulse-stroke 1s infinite; }
+@keyframes pulse-stroke {
+  0%, 100% { stroke-opacity: 1; }
+  50% { stroke-opacity: .4; }
+}
+
+.vertex {
+  fill: rgba(255,255,255,.15);
+  stroke: rgba(255,255,255,.35);
+  stroke-width: 1.5;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity .15s, r .15s;
+}
+.vertex.visible { opacity: 1; }
+.vertex.placeable:hover { fill: #fff; r: 10; }
+.vertex.settlement, .vertex.city { opacity: 1; cursor: default; }
+
+.edge {
+  stroke-linecap: round;
+  fill: none;
+  cursor: default;
+}
+.edge.placeable {
+  cursor: pointer;
+  transition: stroke-width .12s, stroke .12s;
+}
+.edge.placeable:hover {
+  stroke: #fff !important;
+  stroke-width: 12px !important;
+  filter: drop-shadow(0 0 6px rgba(240,160,48,.8));
+}
+.edge.road,
+.edge.road-outline,
+.edge.road-highlight {
+  pointer-events: none;
+}
+.edge.road {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,.45));
+}
+
+.number-token {
+  font-family: var(--mono);
+  font-weight: 700;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+.number-token.hot { fill: #c0392b; }
+
+.tile-label {
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+  fill: rgba(0,0,0,.55);
+  font-weight: 600;
+}
+
+.tile-name {
+  font-family: var(--font);
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,.45);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+}
+
+.tile-res {
+  font-family: var(--font);
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,.4);
+  stroke-width: 2px;
+  stroke-linejoin: round;
+}
+
+.tile-emoji {
+  pointer-events: none;
+}
+
+.tile-dots {
+  letter-spacing: 0.5px;
+  font-family: system-ui, sans-serif;
+}
+
+.tile-dots.hot {
+  fill: #c0392b;
+}
+
+.tile-prob {
+  font-family: var(--mono), var(--font);
+  paint-order: stroke fill;
+  stroke: rgba(0,0,0,.55);
+  stroke-width: 2.5px;
+  stroke-linejoin: round;
+}
+
+.port-label {
+  font-size: 10px;
+  fill: #a8d4f0;
+  text-anchor: middle;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Dice */
+.dice-area {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15,20,25,.75);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+}
+
+.die {
+  width: 42px;
+  height: 42px;
+  background: #f5f0e6;
+  color: #1a1208;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(0,0,0,.3);
+}
+
+.die.rolling { animation: roll 0.4s ease; }
+@keyframes roll {
+  0% { transform: rotate(0) scale(1); }
+  40% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.dice-sum {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 28px;
+}
+
+/* Resources */
+.resources {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.res-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg2);
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 600;
+}
+
+.res-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.res-chip .count {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 1.05rem;
+}
+
+.dev-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 32px;
+}
+
+.dev-card-btn {
+  background: #2a1f3d;
+  border: 1px solid #5a4a7a;
+  color: #d4c4f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: .75rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.dev-card-btn:hover { background: #3a2f4d; }
+.dev-card-btn:disabled { opacity: .5; cursor: default; }
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.action-buttons .btn {
+  width: 100%;
+  text-align: left;
+  font-size: .85rem;
+}
+
+.build-hint {
+  background: rgba(240,160,48,.12);
+  border: 1px solid rgba(240,160,48,.3);
+  color: var(--accent);
+  padding: 10px;
+  border-radius: 8px;
+  font-size: .8rem;
+  line-height: 1.4;
+}
+
+.muted { color: var(--muted); font-weight: 400; }
+
+/* Log */
+.log-bar {
+  flex-shrink: 0;
+  height: 72px;
+  background: var(--bg2);
+  border-top: 1px solid var(--panel-border);
+  overflow: hidden;
+}
+
+#game-log {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px 16px;
+  font-size: .8rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+#game-log .log-entry { animation: fadein .3s ease; }
+#game-log .log-entry.important { color: var(--accent); font-weight: 600; }
+#game-log .log-entry.gain { color: var(--good); }
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 18px;
+  padding: 28px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: var(--shadow);
+}
+
+.modal-card.wide { max-width: 520px; }
+
+.modal-card.winner {
+  text-align: center;
+  padding: 40px;
+}
+
+.winner-emoji { font-size: 64px; margin-bottom: 12px; }
+
+.modal-card h3 {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+.modal-card p { color: var(--muted); margin-bottom: 16px; font-size: .9rem; line-height: 1.5; }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+  justify-content: flex-end;
+}
+
+.trade-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.trade-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: .8rem;
+  color: var(--muted);
+}
+
+.trade-row select {
+  background: var(--bg2);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 8px;
+  border-radius: 8px;
+  font-family: inherit;
+}
+
+.trade-row .arrow {
+  font-size: 1.2rem;
+  color: var(--accent);
+  padding-bottom: 6px;
+}
+
+.help-list {
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1.7;
+}
+
+.help-list strong { color: var(--text); }
+
+.discard-picker, .resource-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.discard-item, .pick-res-btn {
+  background: var(--bg2);
+  border: 1px solid var(--panel-border);
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.discard-item.selected {
+  border-color: var(--accent);
+  background: rgba(240,160,48,.15);
+}
+
+.pick-res-btn:hover {
+  border-color: var(--accent);
+}
+
+.steal-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.steal-targets .btn {
+  width: 100%;
+  text-align: left;
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+  .game-layout {
+    grid-template-columns: 180px 1fr 220px;
+  }
+}
+
+@media (max-width: 860px) {
+  .game-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr auto;
+    overflow-y: auto;
+  }
+  .board-wrap { min-height: 420px; }
+  .players-panel { max-height: 160px; }
+  .phase-banner { font-size: .75rem; max-width: 40%; }
+}
+
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+      <div class="start-card">
+        <div class="logo">🏝️</div>
+        <h1>卡坦島</h1>
+        <p class="subtitle">Settlers of Catan · 單人 / 多人熱座</p>
+        <div class="start-options">
+          <label>
+            人類玩家數量
+            <select id="human-count">
+              <option value="1" selected>1 人（+ AI）</option>
+              <option value="2">2 人</option>
+              <option value="3">3 人</option>
+              <option value="4">4 人</option>
+            </select>
+          </label>
+          <label id="ai-count-label">
+            AI 對手數量
+            <select id="ai-count">
+              <option value="0">0 個 AI</option>
+              <option value="1">1 個 AI</option>
+              <option value="2" selected>2 個 AI</option>
+              <option value="3">3 個 AI</option>
+            </select>
+          </label>
+          <p id="player-total-hint" class="map-mode-desc">共 3 名玩家（1 人類 + 2 AI）</p>
+          <div id="human-names" class="human-names">
+            <label>玩家 1 名字
+              <input class="human-name-input" data-idx="0" type="text" value="玩家1" maxlength="12" />
+            </label>
+          </div>
+          <label>
+            地圖模式
+            <select id="map-mode">
+              <option value="balanced" selected>經典平衡</option>
+              <option value="noDesert">無沙漠</option>
+              <option value="beginner">新手友善</option>
+              <option value="clustered">資源聚集</option>
+              <option value="random">完全隨機</option>
+              <option value="wild">狂野無沙漠</option>
+            </select>
+          </label>
+          <p id="map-mode-desc" class="map-mode-desc">有沙漠，資源分散，6/8 唔相鄰，產出較公平</p>
+        </div>
+        <button id="btn-start" class="btn primary big">開始遊戲</button>
+        <p class="hint">多人為<strong>熱座模式</strong>（同一裝置輪流操作）。回合中可與其他玩家交易。達到 <strong>10 分</strong> 勝利。</p>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hidden">
+      <header class="top-bar">
+        <div class="brand">🏝️ 卡坦島</div>
+        <div id="phase-banner" class="phase-banner">準備中…</div>
+        <div class="top-actions">
+          <button id="btn-help" class="btn ghost" title="規則">?</button>
+          <button id="btn-new" class="btn ghost">新遊戲</button>
+        </div>
+      </header>
+
+      <div class="game-layout">
+        <!-- Players -->
+        <aside class="panel players-panel">
+          <h2>玩家</h2>
+          <div id="players-list"></div>
+          <div class="specials">
+            <div id="longest-road" class="special-badge">🛣️ 最長道路 —</div>
+            <div id="largest-army" class="special-badge">⚔️ 最大軍隊 —</div>
+          </div>
+        </aside>
+
+        <!-- Board -->
+        <main class="board-wrap">
+          <div id="board-container">
+            <svg id="board" viewBox="0 0 900 780" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+          <div id="dice-area" class="dice-area">
+            <div id="die1" class="die">?</div>
+            <div id="die2" class="die">?</div>
+            <span id="dice-sum" class="dice-sum"></span>
+          </div>
+        </main>
+
+        <!-- Actions / Hand -->
+        <aside class="panel actions-panel">
+          <h2 id="hand-title">目前玩家資源</h2>
+          <div id="resources" class="resources"></div>
+
+          <h2>發展卡 <span id="dev-count" class="muted">(0)</span></h2>
+          <div id="dev-cards" class="dev-cards"></div>
+
+          <h2>行動</h2>
+          <div id="action-buttons" class="action-buttons">
+            <button id="btn-roll" class="btn primary" disabled>🎲 擲骰</button>
+            <button id="btn-build-road" class="btn" disabled title="木+磚">🛤️ 建路 (木+磚)</button>
+            <button id="btn-build-settlement" class="btn" disabled title="木+磚+羊+麥">🏠 建村 (木磚羊麥)</button>
+            <button id="btn-build-city" class="btn" disabled title="3麥+2礦">🏰 建城 (3麥+2礦)</button>
+            <button id="btn-buy-dev" class="btn" disabled title="羊+麥+礦">🃏 買發展卡</button>
+            <button id="btn-trade" class="btn" disabled>💱 交易</button>
+            <button id="btn-end" class="btn accent" disabled>結束回合 →</button>
+          </div>
+
+          <div id="build-hint" class="build-hint hidden"></div>
+        </aside>
+      </div>
+
+      <!-- Log -->
+      <footer class="log-bar">
+        <div id="game-log"></div>
+      </footer>
+    </div>
+
+    <!-- Trade Modal -->
+    <div id="trade-modal" class="modal hidden">
+      <div class="modal-card wide">
+        <h3>交易</h3>
+        <div class="trade-tabs">
+          <button type="button" class="trade-tab active" data-tab="bank">🏦 銀行</button>
+          <button type="button" class="trade-tab" data-tab="player">🤝 玩家</button>
+        </div>
+
+        <div id="trade-bank-panel">
+          <p class="muted">預設 4:1。若村莊在港口，可用 3:1 或特定 2:1。</p>
+          <div class="trade-row">
+            <label>交出
+              <select id="trade-give"></select>
+            </label>
+            <label>數量
+              <select id="trade-give-n">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+              </select>
+            </label>
+            <span class="arrow">→</span>
+            <label>換取 1 個
+              <select id="trade-get"></select>
+            </label>
+          </div>
+        </div>
+
+        <div id="trade-player-panel" class="hidden">
+          <p class="muted">經典規則：雙方同意即可，比例任意。對方是人類時需交機確認。</p>
+          <label>交易對象
+            <select id="trade-partner"></select>
+          </label>
+          <div class="player-trade-grid">
+            <div>
+              <h4 id="trade-give-title">你交出</h4>
+              <div id="trade-give-pick" class="trade-pick"></div>
+            </div>
+            <div class="arrow-col">⇄</div>
+            <div>
+              <h4 id="trade-get-title">你獲得</h4>
+              <div id="trade-get-pick" class="trade-pick"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-trade-confirm" class="btn primary">確認交易</button>
+          <button id="btn-trade-cancel" class="btn ghost">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accept player trade -->
+    <div id="trade-accept-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>交易請求</h3>
+        <p id="trade-accept-msg" class="muted"></p>
+        <div id="trade-accept-detail" class="trade-accept-detail"></div>
+        <div class="modal-actions">
+          <button id="btn-trade-accept" class="btn primary">接受</button>
+          <button id="btn-trade-reject" class="btn ghost">拒絕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hot-seat handoff -->
+    <div id="handoff-modal" class="modal hidden">
+      <div class="modal-card winner">
+        <div class="winner-emoji">🔄</div>
+        <h3 id="handoff-title">交給下一位玩家</h3>
+        <p id="handoff-msg" class="muted"></p>
+        <button id="btn-handoff-ready" class="btn primary big">我準備好了</button>
+      </div>
+    </div>
+
+    <!-- Robber / Discard Modal -->
+    <div id="discard-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>丟棄資源</h3>
+        <p id="discard-msg">擲出 7 點，你資源超過 7 張，請丟棄一半。</p>
+        <div id="discard-picker" class="discard-picker"></div>
+        <div class="modal-actions">
+          <button id="btn-discard-confirm" class="btn primary" disabled>確認丟棄</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steal picker -->
+    <div id="steal-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>搶奪資源</h3>
+        <p>選擇一名玩家搶走 1 張隨機資源：</p>
+        <div id="steal-targets" class="steal-targets"></div>
+      </div>
+    </div>
+
+    <!-- Year of Plenty / Monopoly -->
+    <div id="resource-pick-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3 id="resource-pick-title">選擇資源</h3>
+        <div id="resource-pick-options" class="resource-pick"></div>
+      </div>
+    </div>
+
+    <!-- Help -->
+    <div id="help-modal" class="modal hidden">
+      <div class="modal-card wide">
+        <h3>遊戲說明</h3>
+        <ul class="help-list">
+          <li><strong>目標：</strong>率先取得 10 勝利點。</li>
+          <li><strong>村莊 1 分 / 城市 2 分</strong>；發展卡的勝利點卡、最長道路(+2)、最大軍隊(+2) 也計分。</li>
+          <li><strong>擲骰：</strong>有村莊/城市貼著該號碼地塊的玩家獲得資源。擲出 7 會觸發強盜。</li>
+          <li><strong>建造：</strong>路(木+磚)、村莊(木+磚+羊+麥)、城市(3麥+2礦)、發展卡(羊+麥+礦)。</li>
+          <li><strong>距離規則：</strong>兩個村莊之間至少隔一個路口。</li>
+          <li><strong>銀行：</strong>預設 4 換 1；港口可 3:1 或特定 2:1。</li>
+          <li><strong>玩家交易：</strong>自己回合可向其他玩家開價，雙方同意即成交（比例任意）。</li>
+          <li><strong>多人熱座：</strong>同一裝置輪流操作；換人時會提示交機，避免偷看手牌。</li>
+          <li><strong>騎士：</strong>移動強盜並搶奪；累積 3 張可爭最大軍隊。</li>
+        </ul>
+        <div class="modal-actions">
+          <button id="btn-help-close" class="btn primary">明白了</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Winner -->
+    <div id="winner-modal" class="modal hidden">
+      <div class="modal-card winner">
+        <div class="winner-emoji">🏆</div>
+        <h3 id="winner-text">勝利！</h3>
+        <button id="btn-play-again" class="btn primary big">再玩一局</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/* Catan portable bundle — 2026-08-01T10:24:43.526Z */
+'use strict';
+
+/* ===== js/constants.js ===== */
+/** Shared constants for Catan */
+
+const RESOURCES = ['wood', 'brick', 'sheep', 'wheat', 'ore'];
+
+const RES_LABEL = {
+  wood: '木頭',
+  brick: '磚塊',
+  sheep: '羊毛',
+  wheat: '小麥',
+  ore: '礦石',
+};
+
+const RES_EMOJI = {
+  wood: '🪵',
+  brick: '🧱',
+  sheep: '🐑',
+  wheat: '🌾',
+  ore: '⛰️',
+};
+
+const RES_COLOR = {
+  wood: '#5a8f3c',
+  brick: '#c45c3e',
+  sheep: '#8bc34a',
+  wheat: '#e8c547',
+  ore: '#7a8a9a',
+  desert: '#d4b896',
+};
+
+const TILE_EMOJI = {
+  wood: '🌲',
+  brick: '🧱',
+  sheep: '🐑',
+  wheat: '🌾',
+  ore: '⛰️',
+  desert: '🏜️',
+};
+
+/** Terrain name shown on each hex */
+const TILE_LABEL = {
+  wood: '森林',
+  brick: '丘陵',
+  sheep: '牧場',
+  wheat: '農田',
+  ore: '山地',
+  desert: '沙漠',
+};
+
+/** Resource produced (empty for desert) */
+const TILE_RESOURCE_LABEL = {
+  wood: '木頭',
+  brick: '磚塊',
+  sheep: '羊毛',
+  wheat: '小麥',
+  ore: '礦石',
+  desert: '無資源',
+};
+
+const COSTS = {
+  road: { wood: 1, brick: 1 },
+  settlement: { wood: 1, brick: 1, sheep: 1, wheat: 1 },
+  city: { wheat: 3, ore: 2 },
+  dev: { sheep: 1, wheat: 1, ore: 1 },
+};
+
+const PLAYER_COLORS = [
+  { id: 'red', name: '紅', hex: '#ff3b30', dark: '#a93226' },
+  { id: 'blue', name: '藍', hex: '#1e90ff', dark: '#1a5276' },
+  { id: 'orange', name: '橙', hex: '#ff9500', dark: '#a04000' },
+  { id: 'white', name: '白', hex: '#f5f5f7', dark: '#6b7280' },
+];
+
+const DEV_TYPES = {
+  knight: { label: '騎士', emoji: '⚔️', desc: '移動強盜並搶奪' },
+  victory: { label: '勝利點', emoji: '⭐', desc: '隱藏 +1 分' },
+  roadBuilding: { label: '道路建設', emoji: '🛤️', desc: '免費建 2 條路' },
+  yearOfPlenty: { label: '豐收之年', emoji: '🎁', desc: '獲得任意 2 資源' },
+  monopoly: { label: '壟斷', emoji: '👑', desc: '拿走所有人的某種資源' },
+};
+
+/** Standard Catan resource tile counts (with desert) */
+const TILE_TYPES = [
+  ...Array(4).fill('wood'),
+  ...Array(3).fill('brick'),
+  ...Array(4).fill('sheep'),
+  ...Array(4).fill('wheat'),
+  ...Array(3).fill('ore'),
+  'desert',
+];
+
+/** Number tokens (no 7); desert gets none — 18 tokens */
+const NUMBER_TOKENS = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
+
+/** Dice ways out of 36 for each number token */
+const NUMBER_PIPS = {
+  2: 1,
+  3: 2,
+  4: 3,
+  5: 4,
+  6: 5,
+  8: 5,
+  9: 4,
+  10: 3,
+  11: 2,
+  12: 1,
+};
+
+/** Map presets shown on start screen */
+const MAP_MODES = {
+  balanced: {
+    id: 'balanced',
+    label: '經典平衡',
+    desc: '有沙漠，資源分散，6/8 唔相鄰，產出較公平',
+    noDesert: false,
+  },
+  noDesert: {
+    id: 'noDesert',
+    label: '無沙漠',
+    desc: '沙漠換成資源格，全部地塊都有號碼',
+    noDesert: true,
+  },
+  beginner: {
+    id: 'beginner',
+    label: '新手友善',
+    desc: '沙漠置中、資源極分散、號碼最平衡',
+    noDesert: false,
+  },
+  clustered: {
+    id: 'clustered',
+    label: '資源聚集',
+    desc: '同類資源傾向連成一片，策略性更強',
+    noDesert: false,
+  },
+  random: {
+    id: 'random',
+    label: '完全隨機',
+    desc: '資源同號碼盡量隨機（仍避免 6/8 相鄰）',
+    noDesert: false,
+  },
+  wild: {
+    id: 'wild',
+    label: '狂野無沙漠',
+    desc: '無沙漠 + 完全隨機號碼（僅修 6/8）',
+    noDesert: true,
+  },
+};
+
+/**
+ * Build tile type list for a game.
+ * noDesert: replace desert with one extra resource (random among 5 types).
+ */
+function getTileTypes(noDesert = false) {
+  if (!noDesert) return [...TILE_TYPES];
+  const extra = ['wood', 'brick', 'sheep', 'wheat', 'ore'][
+    Math.floor(Math.random() * 5)
+  ];
+  return [
+    ...Array(4).fill('wood'),
+    ...Array(3).fill('brick'),
+    ...Array(4).fill('sheep'),
+    ...Array(4).fill('wheat'),
+    ...Array(3).fill('ore'),
+    extra,
+  ];
+}
+
+/**
+ * Number tokens for land tiles.
+ * noDesert: 19 land tiles → add one mid-probability token (not 6/8).
+ */
+function getNumberTokens(noDesert = false) {
+  if (!noDesert) return [...NUMBER_TOKENS];
+  const extras = [3, 4, 5, 9, 10, 11];
+  const extra = extras[Math.floor(Math.random() * extras.length)];
+  return [...NUMBER_TOKENS, extra];
+}
+
+/** Probability label helpers */
+function formatProbability(number) {
+  const pips = NUMBER_PIPS[number];
+  if (pips == null) return { pips: 0, fraction: '—', percent: '—', dots: '' };
+  const percent = ((pips / 36) * 100).toFixed(1) + '%';
+  return {
+    pips,
+    fraction: `${pips}/36`,
+    percent,
+    dots: '●'.repeat(pips),
+  };
+}
+
+/**
+ * Axial coordinates for standard 19-hex board (pointy-top).
+ * Center at (0,0).
+ */
+const HEX_COORDS = [
+  // row r = -2
+  { q: 0, r: -2 }, { q: 1, r: -2 }, { q: 2, r: -2 },
+  // r = -1
+  { q: -1, r: -1 }, { q: 0, r: -1 }, { q: 1, r: -1 }, { q: 2, r: -1 },
+  // r = 0
+  { q: -2, r: 0 }, { q: -1, r: 0 }, { q: 0, r: 0 }, { q: 1, r: 0 }, { q: 2, r: 0 },
+  // r = 1
+  { q: -2, r: 1 }, { q: -1, r: 1 }, { q: 0, r: 1 }, { q: 1, r: 1 },
+  // r = 2
+  { q: -2, r: 2 }, { q: -1, r: 2 }, { q: 0, r: 2 },
+];
+
+/**
+ * Ports: edge midpoints of board perimeter.
+ * ratio: 3 = 3:1 any, or 2 with resource type
+ */
+const PORTS = [
+  { vertices: null, ratio: 3, resource: null, label: '3:1' }, // assigned at generation by edge index
+];
+
+/** Development card deck composition */
+const DEV_DECK_TEMPLATE = [
+  ...Array(14).fill('knight'),
+  ...Array(5).fill('victory'),
+  ...Array(2).fill('roadBuilding'),
+  ...Array(2).fill('yearOfPlenty'),
+  ...Array(2).fill('monopoly'),
+];
+
+const VP_TO_WIN = 10;
+const MAX_ROADS = 15;
+const MAX_SETTLEMENTS = 5;
+const MAX_CITIES = 4;
+
+
+/* ===== js/board.js ===== */
+/**
+ * Hex board geometry, vertices, edges, ports for Catan.
+ * Pointy-top axial coordinates.
+ */
+
+
+
+const HEX_SIZE = 54;
+const ORIGIN_X = 450;
+const ORIGIN_Y = 390;
+
+/** Cube/axial neighbors (pointy-top): E, NE, NW, W, SW, SE */
+const NEIGHBOR_DIRS = [
+  { q: 1, r: 0 },
+  { q: 1, r: -1 },
+  { q: 0, r: -1 },
+  { q: -1, r: 0 },
+  { q: -1, r: 1 },
+  { q: 0, r: 1 },
+];
+
+/** Vertex offsets from hex center (pointy-top), corner index 0..5 */
+function hexCorner(cx, cy, size, i) {
+  const angle = (Math.PI / 180) * (60 * i - 30);
+  return {
+    x: cx + size * Math.cos(angle),
+    y: cy + size * Math.sin(angle),
+  };
+}
+
+function axialToPixel(q, r, size = HEX_SIZE) {
+  const x = size * (Math.sqrt(3) * q + (Math.sqrt(3) / 2) * r);
+  const y = size * ((3 / 2) * r);
+  return { x: x + ORIGIN_X, y: y + ORIGIN_Y };
+}
+
+function hexKey(q, r) {
+  return `${q},${r}`;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Dice-roll probability weight (ways out of 36). Higher = more frequent. */
+/* re-export NUMBER_PIPS skipped */
+
+/** Axial distance between two hexes */
+function hexDistance(a, b) {
+  const aq = a.q;
+  const ar = a.r;
+  const as_ = -aq - ar;
+  const bq = b.q;
+  const br = b.r;
+  const bs = -bq - br;
+  return (Math.abs(aq - bq) + Math.abs(ar - br) + Math.abs(as_ - bs)) / 2;
+}
+
+function neighborIndices() {
+  // Precompute adjacency list for the 19 fixed coords
+  const adj = HEX_COORDS.map(() => []);
+  for (let i = 0; i < HEX_COORDS.length; i++) {
+    for (let j = i + 1; j < HEX_COORDS.length; j++) {
+      if (hexDistance(HEX_COORDS[i], HEX_COORDS[j]) === 1) {
+        adj[i].push(j);
+        adj[j].push(i);
+      }
+    }
+  }
+  return adj;
+}
+
+const HEX_ADJ = neighborIndices();
+
+/**
+ * Place terrain according to map mode.
+ * modes: balanced | noDesert | beginner | clustered | random | wild
+ */
+function placeTerrainTypes(modeId = 'balanced') {
+  const mode = MAP_MODES[modeId] || MAP_MODES.balanced;
+  const noDesert = mode.noDesert;
+  const baseTypes = getTileTypes(noDesert);
+
+  // Pure random / wild: single shuffle
+  if (modeId === 'random' || modeId === 'wild') {
+    return shuffle(baseTypes);
+  }
+
+  let best = null;
+  let bestScore = -Infinity;
+  const attempts = modeId === 'beginner' ? 120 : 80;
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const types = shuffle(baseTypes);
+    let score = 0;
+
+    for (let i = 0; i < types.length; i++) {
+      if (types[i] === 'desert') continue;
+      let sameN = 0;
+      for (const j of HEX_ADJ[i]) {
+        if (types[j] === types[i]) sameN++;
+      }
+
+      if (modeId === 'clustered') {
+        // Prefer same-type neighbours (resource regions)
+        if (sameN === 0) score -= 2;
+        else if (sameN === 1) score += 3;
+        else if (sameN === 2) score += 6;
+        else score += 4;
+      } else {
+        // balanced / beginner / noDesert: anti-cluster
+        const weight = modeId === 'beginner' ? 1.5 : 1;
+        if (sameN === 0) score += 2 * weight;
+        else if (sameN === 1) score += 1 * weight;
+        else if (sameN === 2) score -= 3 * weight;
+        else score -= 8 * weight;
+      }
+    }
+
+    const desertIdx = types.indexOf('desert');
+    if (desertIdx === 9) {
+      // Centre desert: classic / beginner preferred
+      score += modeId === 'beginner' ? 8 : 0.5;
+    } else if (modeId === 'beginner' && desertIdx >= 0) {
+      score -= 4; // prefer centre desert for beginners
+    }
+
+    if (score > bestScore) {
+      bestScore = score;
+      best = types;
+    }
+  }
+  return best;
+}
+
+/**
+ * Assign number tokens using dice probability constraints:
+ * - 6 and 8 (5-pip / "red") must not be adjacent
+ * - High-pip numbers prefer not stacking on the same resource
+ * - Per-resource total pip value stays roughly balanced
+ * - Scarce resources (brick, ore) get a fair share of mid/high pips
+ */
+function placeNumbers(types, modeId = 'balanced') {
+  const mode = MAP_MODES[modeId] || MAP_MODES.balanced;
+  const noDesert = mode.noDesert;
+  const landIdx = [];
+  for (let i = 0; i < types.length; i++) {
+    if (types[i] !== 'desert') landIdx.push(i);
+  }
+
+  const tokenPool = getNumberTokens(noDesert);
+  if (tokenPool.length !== landIdx.length) {
+    console.warn(
+      `Number token count ${tokenPool.length} != land tiles ${landIdx.length}`
+    );
+  }
+
+  // random / wild: shuffle then only repair adjacent 6/8
+  if (modeId === 'random' || modeId === 'wild') {
+    const nums = shuffle([...tokenPool]);
+    const assign = new Array(types.length).fill(null);
+    landIdx.forEach((idx, k) => {
+      assign[idx] = nums[k];
+    });
+    return repairNumberLayout(types, assign, { light: true });
+  }
+
+  let bestAssign = null;
+  let bestScore = -Infinity;
+  const attempts = modeId === 'beginner' ? 280 : 200;
+  const scoreOpts = { beginner: modeId === 'beginner' };
+
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const nums = shuffle([...tokenPool]);
+    const assign = new Array(types.length).fill(null);
+    landIdx.forEach((idx, k) => {
+      assign[idx] = nums[k];
+    });
+
+    const score = scoreNumberLayout(types, assign, scoreOpts);
+    if (score > bestScore) {
+      bestScore = score;
+      bestAssign = assign;
+      if (score >= (modeId === 'beginner' ? 55 : 40)) break;
+    }
+  }
+
+  return repairNumberLayout(types, bestAssign, scoreOpts);
+}
+
+function scoreNumberLayout(types, assign, opts = {}) {
+  const beginner = !!opts.beginner;
+  let score = 0;
+  const pipByRes = { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+  const highByRes = { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+
+  for (let i = 0; i < types.length; i++) {
+    const n = assign[i];
+    if (n == null) continue;
+    const pips = NUMBER_PIPS[n];
+    pipByRes[types[i]] += pips;
+    if (n === 6 || n === 8) highByRes[types[i]]++;
+
+    for (const j of HEX_ADJ[i]) {
+      if (j < i) continue;
+      const m = assign[j];
+      if (m == null) continue;
+      const pj = NUMBER_PIPS[m];
+
+      // Hard classic rule: 6/8 never adjacent
+      if ((n === 6 || n === 8) && (m === 6 || m === 8)) {
+        score -= 100;
+      }
+      // Soft: high pips next to each other
+      const adjPen = beginner ? 1.5 : 1;
+      if (pips + pj >= 9) score -= 6 * adjPen;
+      else if (pips + pj >= 8) score -= 2 * adjPen;
+
+      if (types[i] === types[j] && pips >= 4 && pj >= 4) score -= 8 * adjPen;
+    }
+  }
+
+  const values = Object.values(pipByRes);
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  const balW = beginner ? 1.4 : 0.8;
+  for (const v of values) {
+    const d = Math.abs(v - avg);
+    score -= d * d * balW;
+  }
+
+  if (pipByRes.brick < 8) score -= (8 - pipByRes.brick) * 3;
+  if (pipByRes.ore < 8) score -= (8 - pipByRes.ore) * 3;
+  if (pipByRes.brick > 16) score -= (pipByRes.brick - 16) * 2;
+  if (pipByRes.ore > 16) score -= (pipByRes.ore - 16) * 2;
+
+  for (const r of Object.keys(highByRes)) {
+    if (highByRes[r] >= 2) score -= 15 * (highByRes[r] - 1);
+    if (highByRes[r] === 1) score += 2;
+  }
+
+  for (let i = 0; i < types.length; i++) {
+    const n = assign[i];
+    if (n !== 2 && n !== 12) continue;
+    if (types[i] === 'brick' || types[i] === 'ore') score -= 3;
+  }
+
+  return score;
+}
+
+/** Greedy swaps to eliminate adjacent 6/8 and improve balance */
+function repairNumberLayout(types, assign, opts = {}) {
+  const a = [...assign];
+  const light = !!opts.light;
+  const isRed = (n) => n === 6 || n === 8;
+
+  for (let pass = 0; pass < 40; pass++) {
+    let fixed = false;
+    for (let i = 0; i < a.length; i++) {
+      if (!isRed(a[i])) continue;
+      for (const j of HEX_ADJ[i]) {
+        if (!isRed(a[j])) continue;
+        let swapped = false;
+        for (let k = 0; k < a.length; k++) {
+          if (a[k] == null || isRed(a[k])) continue;
+          if (HEX_ADJ[k].some((nb) => isRed(a[nb]))) continue;
+          [a[j], a[k]] = [a[k], a[j]];
+          swapped = true;
+          fixed = true;
+          break;
+        }
+        if (!swapped) {
+          for (let k = 0; k < a.length; k++) {
+            if (a[k] == null || isRed(a[k])) continue;
+            if (HEX_ADJ[k].some((nb) => isRed(a[nb]))) continue;
+            [a[i], a[k]] = [a[k], a[i]];
+            fixed = true;
+            break;
+          }
+        }
+      }
+    }
+    if (!fixed) break;
+  }
+
+  if (light) return a;
+
+  // Hill-climb random swaps for better score
+  let best = [...a];
+  let bestScore = scoreNumberLayout(types, best, opts);
+  const climbs = opts.beginner ? 180 : 120;
+  for (let t = 0; t < climbs; t++) {
+    const land = [];
+    for (let i = 0; i < a.length; i++) if (a[i] != null) land.push(i);
+    const i = land[Math.floor(Math.random() * land.length)];
+    const j = land[Math.floor(Math.random() * land.length)];
+    if (i === j) continue;
+    [a[i], a[j]] = [a[j], a[i]];
+    const s = scoreNumberLayout(types, a, opts);
+    if (s >= bestScore) {
+      bestScore = s;
+      best = [...a];
+    } else {
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+  }
+  return best;
+}
+
+/**
+ * Canonical vertex id: round pixel coords so shared corners merge.
+ */
+function vertexIdFromPixel(x, y) {
+  return `${Math.round(x)},${Math.round(y)}`;
+}
+
+/**
+ * Build full board: tiles, vertices, edges, adjacency.
+ * @param {{ mapMode?: string, noDesert?: boolean }} [opts]
+ *   mapMode: balanced | noDesert | beginner | clustered | random | wild
+ *   noDesert: legacy flag (maps to noDesert mode if mapMode omitted)
+ */
+function generateBoard(opts = {}) {
+  let modeId = opts.mapMode || (opts.noDesert ? 'noDesert' : 'balanced');
+  if (!MAP_MODES[modeId]) modeId = 'balanced';
+  const mode = MAP_MODES[modeId];
+  const noDesert = mode.noDesert;
+
+  const types = placeTerrainTypes(modeId);
+  const numbers = placeNumbers(types, modeId);
+
+  const tiles = [];
+  const tileByKey = {};
+  let desertId = null;
+
+  HEX_COORDS.forEach((coord, i) => {
+    const type = types[i];
+    const pixel = axialToPixel(coord.q, coord.r);
+    const number = type === 'desert' ? null : numbers[i];
+    if (type === 'desert') desertId = i;
+    const pips = number != null ? NUMBER_PIPS[number] : 0;
+    const tile = {
+      id: i,
+      q: coord.q,
+      r: coord.r,
+      type,
+      number,
+      pips, // dice ways / 36
+      probability: number != null ? pips / 36 : 0,
+      robber: false,
+      cx: pixel.x,
+      cy: pixel.y,
+      vertexIds: [],
+    };
+    tiles.push(tile);
+    tileByKey[hexKey(coord.q, coord.r)] = tile;
+  });
+
+  // Robber starts on desert, or (no-desert) on a low-pip tile
+  let robberTileId = desertId;
+  if (robberTileId == null) {
+    let best = 0;
+    let bestPips = Infinity;
+    for (const t of tiles) {
+      const p = t.number != null ? NUMBER_PIPS[t.number] : 99;
+      if (p < bestPips || (p === bestPips && Math.random() < 0.5)) {
+        bestPips = p;
+        best = t.id;
+      }
+    }
+    robberTileId = best;
+  }
+  tiles[robberTileId].robber = true;
+
+  // Build vertices from all hex corners
+  const vertices = {};
+  for (const tile of tiles) {
+    for (let c = 0; c < 6; c++) {
+      const p = hexCorner(tile.cx, tile.cy, HEX_SIZE, c);
+      const vid = vertexIdFromPixel(p.x, p.y);
+      if (!vertices[vid]) {
+        vertices[vid] = {
+          id: vid,
+          x: p.x,
+          y: p.y,
+          tiles: [],
+          edges: [],
+          neighbors: [], // adjacent vertex ids
+          building: null, // { playerId, type: 'settlement'|'city' }
+          port: null, // { ratio, resource }
+        };
+      }
+      if (!vertices[vid].tiles.includes(tile.id)) {
+        vertices[vid].tiles.push(tile.id);
+      }
+      tile.vertexIds[c] = vid;
+    }
+  }
+
+  // Build edges from consecutive corners of each hex
+  const edges = {};
+  for (const tile of tiles) {
+    for (let c = 0; c < 6; c++) {
+      const a = tile.vertexIds[c];
+      const b = tile.vertexIds[(c + 1) % 6];
+      const eid = edgeId(a, b);
+      if (!edges[eid]) {
+        edges[eid] = {
+          id: eid,
+          a,
+          b,
+          road: null, // playerId
+          tiles: [],
+        };
+      }
+      if (!edges[eid].tiles.includes(tile.id)) {
+        edges[eid].tiles.push(tile.id);
+      }
+    }
+  }
+
+  // Vertex neighbor graph via edges
+  for (const e of Object.values(edges)) {
+    vertices[e.a].edges.push(e.id);
+    vertices[e.b].edges.push(e.id);
+    if (!vertices[e.a].neighbors.includes(e.b)) vertices[e.a].neighbors.push(e.b);
+    if (!vertices[e.b].neighbors.includes(e.a)) vertices[e.b].neighbors.push(e.a);
+  }
+
+  // Assign ports on coastal vertices (vertices with fewer than 3 land tiles)
+  assignPorts(vertices, edges, tiles);
+
+  return {
+    tiles,
+    tileByKey,
+    vertices,
+    edges,
+    desertId,
+    noDesert,
+    mapMode: modeId,
+    mapLabel: mode.label,
+    hexSize: HEX_SIZE,
+    robberTileId,
+  };
+}
+
+function edgeId(a, b) {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+
+/**
+ * Place 9 ports around the coast on pairs of adjacent coastal vertices.
+ */
+function assignPorts(vertices, edges, tiles) {
+  // Coastal edges: exactly one land tile
+  const coastalEdges = Object.values(edges).filter((e) => e.tiles.length === 1);
+
+  // Group into a rough perimeter order by angle from center
+  const edgeMid = (e) => {
+    const va = vertices[e.a];
+    const vb = vertices[e.b];
+    return { x: (va.x + vb.x) / 2, y: (va.y + vb.y) / 2, e };
+  };
+
+  const mids = coastalEdges.map(edgeMid);
+  mids.sort((p, q) => {
+    const aa = Math.atan2(p.y - ORIGIN_Y, p.x - ORIGIN_X);
+    const ab = Math.atan2(q.y - ORIGIN_Y, q.x - ORIGIN_X);
+    return aa - ab;
+  });
+
+  // Pick every ~2nd coastal edge for ports (9 ports)
+  const portDefs = [
+    { ratio: 3, resource: null },
+    { ratio: 2, resource: 'wood' },
+    { ratio: 3, resource: null },
+    { ratio: 2, resource: 'brick' },
+    { ratio: 3, resource: null },
+    { ratio: 2, resource: 'sheep' },
+    { ratio: 3, resource: null },
+    { ratio: 2, resource: 'wheat' },
+    { ratio: 2, resource: 'ore' },
+  ];
+
+  const step = Math.max(1, Math.floor(mids.length / portDefs.length));
+  const usedVerts = new Set();
+  let pi = 0;
+
+  for (let i = 0; i < mids.length && pi < portDefs.length; i += step) {
+    const { e } = mids[i];
+    if (usedVerts.has(e.a) || usedVerts.has(e.b)) continue;
+    const def = portDefs[pi++];
+    vertices[e.a].port = { ...def };
+    vertices[e.b].port = { ...def };
+    usedVerts.add(e.a);
+    usedVerts.add(e.b);
+    e.port = def;
+  }
+}
+
+function getHexPolygonPoints(cx, cy, size = HEX_SIZE) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const p = hexCorner(cx, cy, size, i);
+    pts.push(`${p.x},${p.y}`);
+  }
+  return pts.join(' ');
+}
+
+function tileFill(type) {
+  return RES_COLOR[type] || '#888';
+}
+
+/** Distance rule: no adjacent buildings */
+function canPlaceSettlement(board, vertexId, playerId, isSetup, playerRoads) {
+  const v = board.vertices[vertexId];
+  if (!v || v.building) return false;
+
+  // Distance: neighbors must not have buildings
+  for (const nid of v.neighbors) {
+    if (board.vertices[nid].building) return false;
+  }
+
+  if (isSetup) return true;
+
+  // Must connect to own road
+  return v.edges.some((eid) => {
+    const e = board.edges[eid];
+    return e.road === playerId;
+  });
+}
+
+function canPlaceRoad(board, edgeIdStr, playerId, isSetup, setupVertexId = null) {
+  const e = board.edges[edgeIdStr];
+  // Note: player id 0 is valid — must use != null, not truthiness
+  if (!e || e.road != null) return false;
+
+  const va = board.vertices[e.a];
+  const vb = board.vertices[e.b];
+
+  if (isSetup && setupVertexId) {
+    // Road must touch the settlement just placed
+    return e.a === setupVertexId || e.b === setupVertexId;
+  }
+
+  // Connected to own road or own building
+  const touchesOwn = (vid) => {
+    const v = board.vertices[vid];
+    if (v.building && v.building.playerId === playerId) return true;
+    return v.edges.some((eid) => {
+      if (eid === edgeIdStr) return false;
+      return board.edges[eid].road === playerId;
+    });
+  };
+
+  // Block if middle of opponent's building? Roads can touch opponent buildings but
+  // path is interrupted for longest road — placement still allowed if connected to own network.
+  return touchesOwn(e.a) || touchesOwn(e.b);
+}
+
+/** Best trade rate for player for a given resource (give type) */
+function getTradeRate(board, playerId, giveResource) {
+  let best = 4;
+  for (const v of Object.values(board.vertices)) {
+    if (!v.building || v.building.playerId !== playerId || !v.port) continue;
+    const p = v.port;
+    if (p.ratio === 3 && p.resource === null) best = Math.min(best, 3);
+    if (p.ratio === 2 && p.resource === giveResource) best = Math.min(best, 2);
+  }
+  return best;
+}
+
+/** Longest continuous road for a player */
+function computeLongestRoad(board, playerId) {
+  const playerEdges = Object.values(board.edges).filter((e) => e.road === playerId);
+  if (playerEdges.length === 0) return 0;
+
+  // Build adjacency of vertices via player's roads, broken by opponent buildings
+  const adj = {};
+  const add = (a, b) => {
+    if (!adj[a]) adj[a] = [];
+    adj[a].push(b);
+  };
+
+  for (const e of playerEdges) {
+    // Opponent settlement/city blocks path *through* that vertex (edge still counts)
+    add(e.a, e.b);
+    add(e.b, e.a);
+  }
+
+  // DFS longest path in road graph (small graph, OK)
+  let maxLen = 0;
+  const nodes = Object.keys(adj);
+
+  function isOppBlock(vid) {
+    const b = board.vertices[vid].building;
+    return b && b.playerId !== playerId;
+  }
+
+  function dfs(node, visitedEdges, length) {
+    maxLen = Math.max(maxLen, length);
+    // Cannot continue through an opponent's building (can only end there)
+    if (length > 0 && isOppBlock(node)) return;
+
+    const neighbors = adj[node] || [];
+    for (const next of neighbors) {
+      const eid = edgeId(node, next);
+      if (visitedEdges.has(eid)) continue;
+      visitedEdges.add(eid);
+      dfs(next, visitedEdges, length + 1);
+      visitedEdges.delete(eid);
+    }
+  }
+
+  for (const n of nodes) {
+    // May start at a vertex even if opponent sits there (path ends at them from other side)
+    dfs(n, new Set(), 0);
+  }
+
+  return maxLen;
+}
+
+function verticesAdjacentToTile(board, tileId) {
+  return Object.values(board.vertices).filter((v) => v.tiles.includes(tileId));
+}
+
+
+/* ===== js/game.js ===== */
+/**
+ * Core Catan game state and rules.
+ */
+
+
+
+
+function createEmptyResources() {
+  return { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+}
+
+function totalResources(res) {
+  return RESOURCES.reduce((s, r) => s + res[r], 0);
+}
+
+function canAfford(res, cost) {
+  return Object.entries(cost).every(([k, v]) => res[k] >= v);
+}
+
+function pay(res, cost) {
+  const next = { ...res };
+  for (const [k, v] of Object.entries(cost)) next[k] -= v;
+  return next;
+}
+
+function addRes(res, gain) {
+  const next = { ...res };
+  for (const [k, v] of Object.entries(gain)) next[k] = (next[k] || 0) + v;
+  return next;
+}
+
+/**
+ * @param {{
+ *   name?: string,
+ *   names?: string[],
+ *   humanCount?: number,
+ *   aiCount?: number,
+ *   mapMode?: string,
+ *   noDesert?: boolean
+ * }} opts
+ */
+function createGame(opts) {
+  const board = generateBoard({
+    mapMode: opts.mapMode,
+    noDesert: !!opts.noDesert,
+  });
+
+  let humanCount = opts.humanCount != null ? +opts.humanCount : 1;
+  let aiCount = opts.aiCount != null ? +opts.aiCount : 0;
+  humanCount = Math.max(1, Math.min(4, humanCount));
+  aiCount = Math.max(0, Math.min(3, aiCount));
+  let totalPlayers = humanCount + aiCount;
+  if (totalPlayers < 2) {
+    aiCount = 1;
+    totalPlayers = humanCount + aiCount;
+  }
+  if (totalPlayers > 4) {
+    aiCount = Math.max(0, 4 - humanCount);
+    totalPlayers = humanCount + aiCount;
+  }
+
+  const names = opts.names || [];
+  const players = [];
+
+  for (let i = 0; i < totalPlayers; i++) {
+    const color = PLAYER_COLORS[i];
+    const isAI = i >= humanCount;
+    let name;
+    if (isAI) {
+      name = `AI ${color.name}`;
+    } else if (names[i]?.trim()) {
+      name = names[i].trim();
+    } else if (i === 0 && opts.name) {
+      name = opts.name;
+    } else {
+      name = `玩家${i + 1}`;
+    }
+    players.push({
+      id: i,
+      name,
+      isAI,
+      color: color.hex,
+      colorId: color.id,
+      resources: createEmptyResources(),
+      devCards: [], // { type, playable: bool } — bought this turn not playable
+      knightsPlayed: 0,
+      settlements: 0,
+      cities: 0,
+      roads: 0,
+      victoryPointsHidden: 0,
+      longestRoadLen: 0,
+    });
+  }
+
+  const devDeck = shuffle([...DEV_DECK_TEMPLATE]);
+
+  return {
+    board,
+    players,
+    humanCount,
+    currentPlayer: 0,
+    phase: 'setup', // setup | roll | main | robber | discard | roadBuilding | gameover
+    setupIndex: 0, // 0..2*n-1 snake order
+    setupStep: 'settlement', // settlement | road
+    setupLastVertex: null,
+    hasRolled: false,
+    dice: [0, 0],
+    longestRoadPlayer: null,
+    largestArmyPlayer: null,
+    freeRoads: 0, // from road building card
+    mustMoveRobber: false,
+    /** If true, after robber/steal return to roll (knight played before dice) */
+    returnToRollAfterRobber: false,
+    discardQueue: [], // player ids who need to discard
+    log: [],
+    winner: null,
+    devDeck,
+    // Pending domestic trade offer (hot-seat accept)
+    pendingTrade: null, // { fromId, toId, give: resMap, get: resMap }
+    turnDevPlayed: false,
+    pendingSteal: null, // { from candidates after robber }
+    buildMode: null, // 'road' | 'settlement' | 'city' | null
+  };
+}
+
+function log(game, msg, opts = {}) {
+  game.log.unshift({ msg, t: Date.now(), ...opts });
+  if (game.log.length > 80) game.log.pop();
+}
+
+/** Setup placement order: 0,1,2,3,3,2,1,0 */
+function setupPlayerOrder(n) {
+  const forward = Array.from({ length: n }, (_, i) => i);
+  const back = [...forward].reverse();
+  return [...forward, ...back];
+}
+
+function getSetupPlayer(game) {
+  const order = setupPlayerOrder(game.players.length);
+  return order[game.setupIndex];
+}
+
+function publicVP(game, playerId) {
+  const p = game.players[playerId];
+  let vp = p.settlements + p.cities * 2;
+  if (game.longestRoadPlayer === playerId) vp += 2;
+  if (game.largestArmyPlayer === playerId) vp += 2;
+  return vp;
+}
+
+function totalVP(game, playerId) {
+  return publicVP(game, playerId) + game.players[playerId].victoryPointsHidden;
+}
+
+function updateLongestRoad(game) {
+  let best = 0;
+  let bestId = null;
+  for (const p of game.players) {
+    p.longestRoadLen = computeLongestRoad(game.board, p.id);
+    if (p.longestRoadLen >= 5 && p.longestRoadLen > best) {
+      best = p.longestRoadLen;
+      bestId = p.id;
+    }
+  }
+  // Need strictly longer than current holder to steal, or first to 5
+  if (game.longestRoadPlayer != null) {
+    const holder = game.players[game.longestRoadPlayer];
+    const holderLen = holder.longestRoadLen;
+    if (holderLen < 5) {
+      game.longestRoadPlayer = bestId;
+      if (bestId != null) log(game, `${game.players[bestId].name} 取得最長道路！`, { important: true });
+    } else {
+      // someone longer?
+      let stealer = null;
+      for (const p of game.players) {
+        if (p.id !== game.longestRoadPlayer && p.longestRoadLen > holderLen) {
+          stealer = p.id;
+          best = p.longestRoadLen;
+        }
+      }
+      if (stealer != null) {
+        game.longestRoadPlayer = stealer;
+        log(game, `${game.players[stealer].name} 搶走最長道路！`, { important: true });
+      }
+    }
+  } else if (bestId != null) {
+    game.longestRoadPlayer = bestId;
+    log(game, `${game.players[bestId].name} 取得最長道路！`, { important: true });
+  }
+}
+
+function updateLargestArmy(game) {
+  let best = 0;
+  let bestId = null;
+  for (const p of game.players) {
+    if (p.knightsPlayed >= 3 && p.knightsPlayed > best) {
+      best = p.knightsPlayed;
+      bestId = p.id;
+    }
+  }
+
+  if (game.largestArmyPlayer != null) {
+    const holderId = game.largestArmyPlayer;
+    const holderKnights = game.players[holderId]?.knightsPlayed ?? 0;
+    // Holder lost eligibility (shouldn't happen) — reassign to current best
+    if (holderKnights < 3) {
+      if (bestId != null && bestId !== holderId) {
+        game.largestArmyPlayer = bestId;
+        log(game, `${game.players[bestId].name} 取得最大軍隊！`, { important: true });
+      } else if (bestId == null) {
+        game.largestArmyPlayer = null;
+      }
+      return;
+    }
+    // Must be strictly more knights than current holder
+    if (bestId != null && bestId !== holderId && best > holderKnights) {
+      game.largestArmyPlayer = bestId;
+      log(game, `${game.players[bestId].name} 搶走最大軍隊！`, { important: true });
+    }
+  } else if (bestId != null) {
+    game.largestArmyPlayer = bestId;
+    log(game, `${game.players[bestId].name} 取得最大軍隊！`, { important: true });
+  }
+}
+
+function checkWin(game) {
+  for (const p of game.players) {
+    if (totalVP(game, p.id) >= VP_TO_WIN) {
+      game.phase = 'gameover';
+      game.winner = p.id;
+      log(game, `🏆 ${p.name} 以 ${totalVP(game, p.id)} 分獲勝！`, { important: true });
+      return true;
+    }
+  }
+  return false;
+}
+
+function placeSettlement(game, vertexId) {
+  const pid = game.phase === 'setup' ? getSetupPlayer(game) : game.currentPlayer;
+  const p = game.players[pid];
+  const isSetup = game.phase === 'setup';
+
+  if (!canPlaceSettlement(game.board, vertexId, pid, isSetup)) {
+    return { ok: false, error: '無法在此放置村莊' };
+  }
+  if (!isSetup) {
+    if (p.settlements >= MAX_SETTLEMENTS) return { ok: false, error: '村莊已達上限' };
+    if (!canAfford(p.resources, COSTS.settlement)) return { ok: false, error: '資源不足' };
+    p.resources = pay(p.resources, COSTS.settlement);
+  }
+
+  game.board.vertices[vertexId].building = { playerId: pid, type: 'settlement' };
+  p.settlements++;
+
+  if (isSetup) {
+    // Second settlement (setup index >= n) gets starting resources
+    const n = game.players.length;
+    if (game.setupIndex >= n) {
+      const v = game.board.vertices[vertexId];
+      const gain = createEmptyResources();
+      for (const tid of v.tiles) {
+        const t = game.board.tiles[tid];
+        if (t.type !== 'desert') gain[t.type]++;
+      }
+      p.resources = addRes(p.resources, gain);
+      const parts = RESOURCES.filter((r) => gain[r] > 0).map((r) => `${RES_LABEL[r]}×${gain[r]}`);
+      if (parts.length) log(game, `${p.name} 起始資源：${parts.join('、')}`, { gain: true });
+    }
+    game.setupLastVertex = vertexId;
+    game.setupStep = 'road';
+    log(game, `${p.name} 放置了村莊`);
+  } else {
+    log(game, `${p.name} 建造了村莊`);
+    updateLongestRoad(game);
+    checkWin(game);
+  }
+  return { ok: true };
+}
+
+function placeRoad(game, edgeIdStr) {
+  const pid =
+    game.phase === 'setup'
+      ? getSetupPlayer(game)
+      : game.currentPlayer;
+  const p = game.players[pid];
+  const isSetup = game.phase === 'setup';
+  // Free roads only while resolving the Road Building dev card
+  const free = game.freeRoads > 0 && game.phase === 'roadBuilding';
+
+  if (!canPlaceRoad(game.board, edgeIdStr, pid, isSetup, game.setupLastVertex)) {
+    return { ok: false, error: '無法在此放置道路' };
+  }
+  if (p.roads >= MAX_ROADS) return { ok: false, error: '道路已達上限' };
+
+  if (!isSetup && !free) {
+    if (!canAfford(p.resources, COSTS.road)) return { ok: false, error: '資源不足' };
+    p.resources = pay(p.resources, COSTS.road);
+  }
+
+  game.board.edges[edgeIdStr].road = pid;
+  p.roads++;
+
+  if (isSetup) {
+    log(game, `${p.name} 放置了道路`);
+    game.setupIndex++;
+    game.setupStep = 'settlement';
+    game.setupLastVertex = null;
+    if (game.setupIndex >= game.players.length * 2) {
+      game.phase = 'roll';
+      game.currentPlayer = 0;
+      log(
+        game,
+        `設置完成！遊戲開始 — 由 ${game.players[0].name} 先手。`,
+        { important: true }
+      );
+    }
+  } else {
+    log(game, `${p.name} 建造了道路`);
+    if (free) {
+      game.freeRoads--;
+    }
+    updateLongestRoad(game);
+    checkWin(game);
+    // End free-road phase if done or nowhere left to build
+    resolveRoadBuildingPhase(game);
+  }
+  return { ok: true };
+}
+
+/** Exit roadBuilding when free roads used up or no legal edges remain */
+function resolveRoadBuildingPhase(game) {
+  if (game.phase !== 'roadBuilding') return;
+  const pid = game.currentPlayer;
+  const canBuild =
+    game.freeRoads > 0 &&
+    game.players[pid].roads < MAX_ROADS &&
+    getPlaceableRoads(game, pid, false).length > 0;
+  if (!canBuild) {
+    if (game.freeRoads > 0) {
+      log(game, `${game.players[pid].name} 無法再放置免費道路`);
+    }
+    game.freeRoads = 0;
+    game.phase = 'main';
+  }
+}
+
+/**
+ * Recover from stuck intermediate states (empty queues, impossible free roads, etc.)
+ * @returns {boolean} true if state was changed
+ */
+/** After robber / steal, go to main — or back to roll if knight was pre-roll */
+function phaseAfterRobber(game) {
+  if (game.returnToRollAfterRobber && !game.hasRolled) {
+    game.returnToRollAfterRobber = false;
+    game.phase = 'roll';
+    game.mustMoveRobber = false;
+    return 'roll';
+  }
+  game.returnToRollAfterRobber = false;
+  game.phase = 'main';
+  game.mustMoveRobber = false;
+  return 'main';
+}
+
+function ensurePlayableState(game) {
+  if (!game || game.phase === 'gameover') return false;
+  let changed = false;
+
+  // Stale trade from a previous turn — cancel
+  if (
+    game.pendingTrade &&
+    (game.pendingTrade.fromId !== game.currentPlayer || game.phase !== 'main')
+  ) {
+    const to = game.players[game.pendingTrade.toId];
+    log(game, `交易已失效${to ? `（原對象：${to.name}）` : ''}，已取消`);
+    game.pendingTrade = null;
+    changed = true;
+  }
+
+  if (game.phase === 'discard' && !game.discardQueue?.length) {
+    game.phase = 'robber';
+    game.mustMoveRobber = true;
+    changed = true;
+  }
+
+  if (game.phase === 'steal' && !game.pendingSteal?.length) {
+    game.pendingSteal = null;
+    phaseAfterRobber(game);
+    changed = true;
+  }
+
+  if (game.phase === 'roadBuilding') {
+    const before = game.phase;
+    resolveRoadBuildingPhase(game);
+    if (game.phase !== before) changed = true;
+  }
+
+  if (game.phase === 'robber') {
+    const others = game.board.tiles.filter((t) => t.id !== game.board.robberTileId);
+    if (others.length === 0) {
+      phaseAfterRobber(game);
+      changed = true;
+    }
+  }
+
+  // freeRoads residual outside roadBuilding
+  if (game.phase !== 'roadBuilding' && game.freeRoads > 0) {
+    game.freeRoads = 0;
+    changed = true;
+  }
+
+  return changed;
+}
+
+function upgradeCity(game, vertexId) {
+  const pid = game.currentPlayer;
+  const p = game.players[pid];
+  const v = game.board.vertices[vertexId];
+
+  if (!v?.building || v.building.playerId !== pid || v.building.type !== 'settlement') {
+    return { ok: false, error: '只能升級自己的村莊' };
+  }
+  if (p.cities >= MAX_CITIES) return { ok: false, error: '城市已達上限' };
+  if (!canAfford(p.resources, COSTS.city)) return { ok: false, error: '資源不足' };
+
+  p.resources = pay(p.resources, COSTS.city);
+  v.building.type = 'city';
+  p.settlements--;
+  p.cities++;
+  log(game, `${p.name} 升級為城市`);
+  checkWin(game);
+  return { ok: true };
+}
+
+function rollDice(game) {
+  if (game.phase !== 'roll') return { ok: false, error: '現在不能擲骰' };
+
+  const d1 = 1 + Math.floor(Math.random() * 6);
+  const d2 = 1 + Math.floor(Math.random() * 6);
+  game.dice = [d1, d2];
+  game.hasRolled = true;
+  game.returnToRollAfterRobber = false; // rolled; robber from 7 goes to main after
+  const sum = d1 + d2;
+  const p = game.players[game.currentPlayer];
+  log(game, `${p.name} 擲出 ${d1}+${d2}=${sum}`);
+
+  if (sum === 7) {
+    // Discard phase
+    game.discardQueue = [];
+    for (const pl of game.players) {
+      if (totalResources(pl.resources) > 7) {
+        game.discardQueue.push(pl.id);
+      }
+    }
+    game.mustMoveRobber = true;
+    if (game.discardQueue.length > 0) {
+      game.phase = 'discard';
+      log(game, '有人資源超過 7 張，需丟棄一半', { important: true });
+    } else {
+      game.phase = 'robber';
+      log(game, '移動強盜！', { important: true });
+    }
+  } else {
+    distributeResources(game, sum);
+    game.phase = 'main';
+  }
+  return { ok: true, sum, d1, d2 };
+}
+
+function distributeResources(game, number) {
+  const gains = game.players.map(() => createEmptyResources());
+  for (const tile of game.board.tiles) {
+    if (tile.number !== number || tile.robber) continue;
+    const verts = verticesAdjacentToTile(game.board, tile.id);
+    for (const v of verts) {
+      if (!v.building) continue;
+      const amt = v.building.type === 'city' ? 2 : 1;
+      gains[v.building.playerId][tile.type] += amt;
+    }
+  }
+  for (let i = 0; i < game.players.length; i++) {
+    const g = gains[i];
+    const parts = RESOURCES.filter((r) => g[r] > 0).map((r) => `${RES_LABEL[r]}×${g[r]}`);
+    if (parts.length) {
+      game.players[i].resources = addRes(game.players[i].resources, g);
+      log(game, `${game.players[i].name} 獲得 ${parts.join('、')}`, { gain: true });
+    }
+  }
+}
+
+function discardResources(game, playerId, toDiscard) {
+  // toDiscard: { wood: n, ... }
+  const p = game.players[playerId];
+  const need = Math.floor(totalResources(p.resources) / 2);
+  const giving = totalResources(toDiscard);
+  if (giving !== need) return { ok: false, error: `需丟棄 ${need} 張` };
+  for (const r of RESOURCES) {
+    if ((toDiscard[r] || 0) > p.resources[r]) return { ok: false, error: '資源不足' };
+  }
+  p.resources = pay(p.resources, toDiscard);
+  game.discardQueue = game.discardQueue.filter((id) => id !== playerId);
+  log(game, `${p.name} 丟棄了 ${need} 張資源`);
+
+  if (game.discardQueue.length === 0) {
+    game.phase = 'robber';
+  }
+  return { ok: true };
+}
+
+function moveRobber(game, tileId, stealFromPlayerId = null) {
+  if (game.phase !== 'robber') {
+    return { ok: false, error: '現在不能移動強盜' };
+  }
+  if (tileId == null || tileId < 0 || tileId >= game.board.tiles.length) {
+    return { ok: false, error: '無效地塊' };
+  }
+  if (tileId === game.board.robberTileId) {
+    return { ok: false, error: '強盜必須移到其他地塊' };
+  }
+
+  // Clear old
+  for (const t of game.board.tiles) t.robber = false;
+  game.board.tiles[tileId].robber = true;
+  game.board.robberTileId = tileId;
+
+  const p = game.players[game.currentPlayer];
+  log(game, `${p.name} 將強盜移到 ${tileLabel(game.board.tiles[tileId])}`);
+
+  // Steal candidates
+  const candidates = new Set();
+  for (const v of verticesAdjacentToTile(game.board, tileId)) {
+    if (v.building && v.building.playerId !== game.currentPlayer) {
+      const op = game.players[v.building.playerId];
+      if (totalResources(op.resources) > 0) candidates.add(v.building.playerId);
+    }
+  }
+
+  game.mustMoveRobber = false;
+
+  if (candidates.size === 0) {
+    phaseAfterRobber(game);
+    return { ok: true, stole: null };
+  }
+
+  const list = [...candidates];
+  if (stealFromPlayerId != null && candidates.has(stealFromPlayerId)) {
+    return doSteal(game, stealFromPlayerId);
+  }
+
+  // For human: need UI pick; for AI auto
+  if (p.isAI) {
+    const target = list[Math.floor(Math.random() * list.length)];
+    return doSteal(game, target);
+  }
+
+  game.pendingSteal = list;
+  game.phase = 'steal';
+  return { ok: true, pendingSteal: list };
+}
+
+function tileLabel(t) {
+  const names = { wood: '森林', brick: '丘陵', sheep: '牧場', wheat: '農田', ore: '山地', desert: '沙漠' };
+  return t.number ? `${names[t.type]}(${t.number})` : names[t.type];
+}
+
+function doSteal(game, targetId) {
+  const thief = game.players[game.currentPlayer];
+  if (!thief) return { ok: false, error: '無效玩家' };
+
+  // Validate target
+  if (targetId === game.currentPlayer) {
+    return { ok: false, error: '不能搶自己' };
+  }
+  const victim = game.players[targetId];
+  if (!victim) return { ok: false, error: '無效的搶奪目標' };
+
+  // If UI set a candidate list, enforce it (AI direct steal from moveRobber has pendingSteal null)
+  if (game.pendingSteal?.length && !game.pendingSteal.includes(targetId)) {
+    return { ok: false, error: '無效的搶奪目標' };
+  }
+  // Must be in steal phase, or still in robber while AI resolves immediately
+  if (game.phase !== 'steal' && game.phase !== 'robber') {
+    return { ok: false, error: '現在不能搶奪' };
+  }
+
+  const pool = [];
+  for (const r of RESOURCES) {
+    for (let i = 0; i < victim.resources[r]; i++) pool.push(r);
+  }
+  if (pool.length === 0) {
+    game.pendingSteal = null;
+    phaseAfterRobber(game);
+    return { ok: true, stole: null };
+  }
+  const stole = pool[Math.floor(Math.random() * pool.length)];
+  victim.resources[stole]--;
+  thief.resources[stole]++;
+  game.pendingSteal = null;
+  phaseAfterRobber(game);
+  log(game, `${thief.name} 從 ${victim.name} 搶走了 ${RES_LABEL[stole]}`, { important: true });
+  return { ok: true, stole };
+}
+
+function buyDevCard(game) {
+  const p = game.players[game.currentPlayer];
+  if (game.phase !== 'main') return { ok: false, error: '現在不能買卡' };
+  if (!canAfford(p.resources, COSTS.dev)) return { ok: false, error: '資源不足' };
+  if (game.devDeck.length === 0) return { ok: false, error: '發展卡已用完' };
+
+  p.resources = pay(p.resources, COSTS.dev);
+  const type = game.devDeck.pop();
+  p.devCards.push({ type, playable: false, justBought: true });
+  log(game, `${p.name} 購買了發展卡`);
+  if (type === 'victory') {
+    p.victoryPointsHidden++;
+    checkWin(game);
+  }
+  return { ok: true, type };
+}
+
+function playDevCard(game, cardIndex, extra = {}) {
+  const p = game.players[game.currentPlayer];
+  const card = p.devCards[cardIndex];
+  if (!card) return { ok: false, error: '無效卡牌' };
+  if (card.type === 'victory') return { ok: false, error: '勝利點卡不能打出' };
+  if (card.justBought) return { ok: false, error: '本回合購買的卡不能使用' };
+  if (game.turnDevPlayed) return { ok: false, error: '每回合只能打一張發展卡' };
+
+  // Knight may be played before rolling; other cards only in main phase
+  if (card.type === 'knight') {
+    if (game.phase !== 'main' && game.phase !== 'roll') {
+      return { ok: false, error: '現在不能打牌' };
+    }
+  } else if (game.phase !== 'main') {
+    return { ok: false, error: '現在不能打牌' };
+  }
+
+  if (card.type === 'knight') {
+    p.devCards.splice(cardIndex, 1);
+    p.knightsPlayed++;
+    game.turnDevPlayed = true;
+    updateLargestArmy(game);
+    checkWin(game);
+    // Pre-roll knight: after robber must still roll dice
+    if (game.phase === 'roll' && !game.hasRolled) {
+      game.returnToRollAfterRobber = true;
+    }
+    game.phase = 'robber';
+    game.mustMoveRobber = true;
+    log(game, `${p.name} 打出騎士`);
+    return { ok: true, type: 'knight' };
+  }
+
+  if (card.type === 'roadBuilding') {
+    p.devCards.splice(cardIndex, 1);
+    game.turnDevPlayed = true;
+    game.freeRoads = Math.min(2, MAX_ROADS - p.roads);
+    if (game.freeRoads === 0) {
+      log(game, `${p.name} 打出道路建設，但已無道路可建`);
+      return { ok: true, type: 'roadBuilding' };
+    }
+    game.phase = 'roadBuilding';
+    log(game, `${p.name} 打出道路建設，可免費建 ${game.freeRoads} 條路`);
+    // Immediately bail if nowhere to place
+    resolveRoadBuildingPhase(game);
+    return { ok: true, type: 'roadBuilding' };
+  }
+
+  if (card.type === 'yearOfPlenty') {
+    const picks = extra.resources; // [r1, r2]
+    if (!picks || picks.length !== 2 || !picks.every((r) => RESOURCES.includes(r))) {
+      return { ok: false, error: '請選擇 2 個資源', needPick: 'yearOfPlenty' };
+    }
+    p.devCards.splice(cardIndex, 1);
+    game.turnDevPlayed = true;
+    p.resources[picks[0]]++;
+    p.resources[picks[1]]++;
+    log(game, `${p.name} 打出豐收之年，獲得 ${RES_LABEL[picks[0]]}、${RES_LABEL[picks[1]]}`, { gain: true });
+    return { ok: true, type: 'yearOfPlenty' };
+  }
+
+  if (card.type === 'monopoly') {
+    const res = extra.resource;
+    if (!RESOURCES.includes(res)) {
+      return { ok: false, error: '請選擇資源', needPick: 'monopoly' };
+    }
+    p.devCards.splice(cardIndex, 1);
+    game.turnDevPlayed = true;
+    let total = 0;
+    for (const op of game.players) {
+      if (op.id === p.id) continue;
+      total += op.resources[res];
+      op.resources[res] = 0;
+    }
+    p.resources[res] += total;
+    log(game, `${p.name} 壟斷了 ${RES_LABEL[res]}（共 ${total} 張）`, { important: true });
+    return { ok: true, type: 'monopoly' };
+  }
+
+  return { ok: false, error: '未知卡牌' };
+}
+
+function bankTrade(game, giveRes, giveCount, getRes) {
+  const p = game.players[game.currentPlayer];
+  if (game.phase !== 'main') return { ok: false, error: '現在不能交易' };
+  if (giveRes === getRes) return { ok: false, error: '不能換同種資源' };
+  const rate = getTradeRate(game.board, p.id, giveRes);
+  if (giveCount !== rate) {
+    // allow if giveCount matches rate
+    return { ok: false, error: `此資源需 ${rate}:1 交易` };
+  }
+  if (p.resources[giveRes] < giveCount) return { ok: false, error: '資源不足' };
+  p.resources[giveRes] -= giveCount;
+  p.resources[getRes]++;
+  log(game, `${p.name} 以 ${giveCount} ${RES_LABEL[giveRes]} 換 1 ${RES_LABEL[getRes]}（銀行）`);
+  return { ok: true };
+}
+
+function resMapTotal(map) {
+  return RESOURCES.reduce((s, r) => s + (map[r] || 0), 0);
+}
+
+function formatResMap(map) {
+  return RESOURCES.filter((r) => (map[r] || 0) > 0)
+    .map((r) => `${RES_LABEL[r]}×${map[r]}`)
+    .join('、');
+}
+
+/**
+ * Domestic trade between current player and another player (Catan rules: any ratio if both agree).
+ * give = resources current player gives; get = resources they receive from partner.
+ * @returns {{ ok: boolean, error?: string, needAccept?: boolean, pending?: object, auto?: boolean }}
+ */
+function proposePlayerTrade(game, toPlayerId, give, get) {
+  if (game.phase !== 'main') return { ok: false, error: '現在不能交易' };
+  const fromId = game.currentPlayer;
+  const from = game.players[fromId];
+  const to = game.players[toPlayerId];
+  if (!to || to.id === fromId) return { ok: false, error: '請選擇其他玩家' };
+  if (resMapTotal(give) === 0 && resMapTotal(get) === 0) {
+    return { ok: false, error: '請至少選擇要交換的資源' };
+  }
+  if (resMapTotal(give) === 0 || resMapTotal(get) === 0) {
+    return { ok: false, error: '雙方都要交出至少 1 張資源（不可單向贈送）' };
+  }
+  for (const r of RESOURCES) {
+    if ((give[r] || 0) > from.resources[r]) return { ok: false, error: `${from.name} 的 ${RES_LABEL[r]} 不足` };
+    if ((get[r] || 0) > to.resources[r]) return { ok: false, error: `${to.name} 的 ${RES_LABEL[r]} 不足` };
+  }
+
+  const offer = {
+    fromId,
+    toId: toPlayerId,
+    give: { ...createEmptyResources(), ...give },
+    get: { ...createEmptyResources(), ...get },
+  };
+
+  // AI partner: decide immediately
+  if (to.isAI) {
+    if (aiAcceptsTrade(game, offer)) {
+      executePlayerTrade(game, offer);
+      return { ok: true, auto: true };
+    }
+    log(game, `${to.name} 拒絕了交易`, { important: true });
+    return { ok: false, error: `${to.name} 拒絕了這筆交易` };
+  }
+
+  // Human partner: need accept screen
+  game.pendingTrade = offer;
+  log(game, `${from.name} 向 ${to.name} 提出交易：給 ${formatResMap(offer.give)}，換 ${formatResMap(offer.get)}`);
+  return { ok: true, needAccept: true, pending: offer };
+}
+
+function executePlayerTrade(game, offer) {
+  const from = game.players[offer.fromId];
+  const to = game.players[offer.toId];
+  for (const r of RESOURCES) {
+    const g = offer.give[r] || 0;
+    const t = offer.get[r] || 0;
+    from.resources[r] -= g;
+    to.resources[r] += g;
+    to.resources[r] -= t;
+    from.resources[r] += t;
+  }
+  game.pendingTrade = null;
+  log(
+    game,
+    `${from.name} 與 ${to.name} 成交：${formatResMap(offer.give)} ⇄ ${formatResMap(offer.get)}`,
+    { important: true, gain: true }
+  );
+  return { ok: true };
+}
+
+function acceptPlayerTrade(game) {
+  const offer = game.pendingTrade;
+  if (!offer) return { ok: false, error: '沒有待確認的交易' };
+  // Trade only valid during proposer's main phase
+  if (game.phase !== 'main' || game.currentPlayer !== offer.fromId) {
+    game.pendingTrade = null;
+    return { ok: false, error: '交易已過期（須在發起方回合內完成）' };
+  }
+  // Re-validate
+  const from = game.players[offer.fromId];
+  const to = game.players[offer.toId];
+  for (const r of RESOURCES) {
+    if ((offer.give[r] || 0) > from.resources[r]) {
+      game.pendingTrade = null;
+      return { ok: false, error: '發起方資源已變更，交易取消' };
+    }
+    if ((offer.get[r] || 0) > to.resources[r]) {
+      game.pendingTrade = null;
+      return { ok: false, error: '你的資源不足，無法成交' };
+    }
+  }
+  return executePlayerTrade(game, offer);
+}
+
+function rejectPlayerTrade(game) {
+  const offer = game.pendingTrade;
+  if (!offer) return { ok: false, error: '沒有待確認的交易' };
+  const to = game.players[offer.toId];
+  log(game, `${to.name} 拒絕了交易`);
+  game.pendingTrade = null;
+  return { ok: true };
+}
+
+/** Simple AI trade evaluation: accept if net pip-ish value ok */
+function aiAcceptsTrade(game, offer) {
+  // Prefer receiving wood/brick early, ore/wheat late; rough value
+  const val = { wood: 1.1, brick: 1.15, sheep: 0.9, wheat: 1.2, ore: 1.25 };
+  let giveV = 0;
+  let getV = 0; // from AI perspective: give = what AI loses (offer.get), get = what AI gains (offer.give)
+  for (const r of RESOURCES) {
+    giveV += (offer.get[r] || 0) * val[r];
+    getV += (offer.give[r] || 0) * val[r];
+  }
+  // Need at least break-even-ish, slight greed
+  if (getV + 0.15 < giveV) return false;
+  // Don't empty hand of last useful cards randomly
+  const to = game.players[offer.toId];
+  if (totalResources(to.resources) - resMapTotal(offer.get) < 1 && resMapTotal(offer.give) < 2) {
+    return Math.random() < 0.3;
+  }
+  return getV >= giveV * 0.85 || Math.random() < 0.25;
+}
+
+/** Whose hand / controls the UI should reflect right now */
+function uiControllerId(game) {
+  if (game.phase === 'discard' && game.discardQueue?.length) {
+    return game.discardQueue[0];
+  }
+  if (game.pendingTrade) {
+    return game.pendingTrade.toId;
+  }
+  if (game.phase === 'setup') return getSetupPlayer(game);
+  return game.currentPlayer;
+}
+
+function isHumanController(game) {
+  const id = uiControllerId(game);
+  return id != null && game.players[id] && !game.players[id].isAI;
+}
+
+/** Active builder / roller (not discard or trade-accept) */
+function actingPlayerId(game) {
+  if (game.phase === 'setup') return getSetupPlayer(game);
+  return game.currentPlayer;
+}
+
+function isHumanActing(game) {
+  const id = actingPlayerId(game);
+  return id != null && game.players[id] && !game.players[id].isAI;
+}
+
+function endTurn(game) {
+  if (game.phase !== 'main') return { ok: false, error: '請先完成當前回合行動' };
+  if (!game.hasRolled) {
+    return { ok: false, error: '請先擲骰' };
+  }
+
+  // Cancel any open domestic trade (cannot span turns)
+  if (game.pendingTrade) {
+    const to = game.players[game.pendingTrade.toId];
+    log(game, `結束回合，已取消與 ${to?.name || '對方'} 的未完成交易`);
+    game.pendingTrade = null;
+  }
+
+  // Win check at end of own turn (includes hidden VP)
+  if (checkWin(game)) {
+    return { ok: true, won: true };
+  }
+
+  const p = game.players[game.currentPlayer];
+  // Make bought cards playable next turn
+  for (const c of p.devCards) {
+    c.justBought = false;
+    c.playable = true;
+  }
+  game.turnDevPlayed = false;
+  game.hasRolled = false;
+  game.buildMode = null;
+  game.freeRoads = 0;
+  game.returnToRollAfterRobber = false;
+  game.mustMoveRobber = false;
+  game.pendingSteal = null;
+  game.dice = [0, 0];
+
+  game.currentPlayer = (game.currentPlayer + 1) % game.players.length;
+  game.phase = 'roll';
+  log(game, `輪到 ${game.players[game.currentPlayer].name}`);
+  return { ok: true };
+}
+
+function getPlaceableSettlements(game, playerId, isSetup) {
+  return Object.keys(game.board.vertices).filter((vid) =>
+    canPlaceSettlement(game.board, vid, playerId, isSetup)
+  );
+}
+
+function getPlaceableRoads(game, playerId, isSetup, setupVertexId) {
+  return Object.keys(game.board.edges).filter((eid) =>
+    canPlaceRoad(game.board, eid, playerId, isSetup, setupVertexId)
+  );
+}
+
+function getUpgradeableSettlements(game, playerId) {
+  return Object.entries(game.board.vertices)
+    .filter(([, v]) => v.building?.playerId === playerId && v.building.type === 'settlement')
+    .map(([id]) => id);
+}
+
+
+
+/* ===== js/ai.js ===== */
+/**
+ * Simple but competent Catan AI.
+ */
+
+
+
+
+
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+const PIP = { 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
+
+function scoreVertex(game, vid) {
+  const v = game.board.vertices[vid];
+  let score = 0;
+  const seen = new Set();
+  for (const tid of v.tiles) {
+    const t = game.board.tiles[tid];
+    if (t.type === 'desert') continue;
+    score += (PIP[t.number] || 0) * 2;
+    if (t.type === 'ore' || t.type === 'wheat') score += 1.5;
+    if (t.type === 'wood' || t.type === 'brick') score += 1.2;
+    seen.add(t.type);
+  }
+  score += seen.size * 1.5;
+  if (v.port) score += v.port.ratio === 2 ? 3 : 1.5;
+  return score;
+}
+
+function scoreEdge(game, eid, playerId) {
+  const e = game.board.edges[eid];
+  let score = 1;
+  for (const vid of [e.a, e.b]) {
+    const v = game.board.vertices[vid];
+    if (!v.building) score += scoreVertex(game, vid) * 0.3;
+    if (v.building?.playerId === playerId) score += 0.5;
+  }
+  return score;
+}
+
+function pickBest(items, scoreFn) {
+  if (!items.length) return null;
+  let best = items[0];
+  let bestS = -Infinity;
+  for (const it of items) {
+    const s = scoreFn(it) + Math.random() * 0.3;
+    if (s > bestS) {
+      bestS = s;
+      best = it;
+    }
+  }
+  return best;
+}
+
+async function aiSetup(game, onUpdate) {
+  while (game.phase === 'setup') {
+    const pid = getSetupPlayer(game);
+    const p = game.players[pid];
+    if (!p.isAI) return;
+
+    if (game.setupStep === 'settlement') {
+      const spots = getPlaceableSettlements(game, pid, true);
+      const best = pickBest(spots, (vid) => scoreVertex(game, vid));
+      if (best) placeSettlement(game, best);
+    } else {
+      const roads = getPlaceableRoads(game, pid, true, game.setupLastVertex);
+      const best = pickBest(roads, (eid) => scoreEdge(game, eid, pid));
+      if (best) placeRoad(game, best);
+    }
+    onUpdate();
+    await sleep(450);
+  }
+}
+
+async function aiDiscard(game, pid) {
+  const p = game.players[pid];
+  const need = Math.floor(totalResources(p.resources) / 2);
+  const discard = createEmptyResources();
+  const priority = ['sheep', 'wood', 'brick', 'wheat', 'ore'];
+  const pool = [];
+  for (const r of priority) {
+    for (let i = 0; i < p.resources[r]; i++) pool.push(r);
+  }
+  pool.sort(
+    (a, b) => p.resources[b] - p.resources[a] || priority.indexOf(a) - priority.indexOf(b)
+  );
+  for (let i = 0; i < need && i < pool.length; i++) {
+    discard[pool[i]]++;
+  }
+  discardResources(game, pid, discard);
+}
+
+async function aiRobber(game) {
+  const pid = game.currentPlayer;
+  let bestTile = null;
+  let bestScore = -Infinity;
+
+  for (const t of game.board.tiles) {
+    if (t.id === game.board.robberTileId) continue;
+    let score = t.type === 'desert' ? -5 : 0;
+    let hitsEnemy = false;
+    let hitsSelf = false;
+    for (const v of Object.values(game.board.vertices)) {
+      if (!v.tiles.includes(t.id) || !v.building) continue;
+      const owner = v.building.playerId;
+      const mult = v.building.type === 'city' ? 2 : 1;
+      const pip = PIP[t.number] || 0;
+      if (owner === pid) {
+        hitsSelf = true;
+        score -= pip * mult * 3;
+      } else {
+        hitsEnemy = true;
+        score += pip * mult * (1 + publicVP(game, owner) * 0.3);
+        if (totalResources(game.players[owner].resources) > 0) score += 2;
+      }
+    }
+    if (hitsSelf && !hitsEnemy) score -= 20;
+    score += Math.random();
+    if (score > bestScore) {
+      bestScore = score;
+      bestTile = t.id;
+    }
+  }
+
+  if (bestTile == null) {
+    bestTile = game.board.tiles.find((t) => t.id !== game.board.robberTileId)?.id ?? 0;
+  }
+  moveRobber(game, bestTile);
+}
+
+async function aiMaybePlayKnight(game, onUpdate) {
+  const p = game.players[game.currentPlayer];
+  if (game.turnDevPlayed) return;
+  const idx = p.devCards.findIndex((c) => c.type === 'knight' && !c.justBought);
+  if (idx < 0) return;
+
+  const robberTile = game.board.tiles[game.board.robberTileId];
+  let onUs = false;
+  for (const v of Object.values(game.board.vertices)) {
+    if (v.tiles.includes(robberTile.id) && v.building?.playerId === p.id) onUs = true;
+  }
+  if (onUs || p.knightsPlayed === 2 || Math.random() < 0.25) {
+    playDevCard(game, idx);
+    onUpdate();
+    await sleep(300);
+  }
+}
+
+function aiNeededResources(p) {
+  const goals = [COSTS.city, COSTS.settlement, COSTS.road, COSTS.dev];
+  for (const cost of goals) {
+    const missing = [];
+    for (const [r, n] of Object.entries(cost)) {
+      for (let i = p.resources[r]; i < n; i++) missing.push(r);
+    }
+    if (missing.length && missing.length <= 3) {
+      return missing.length >= 2 ? missing : [missing[0], 'wheat'];
+    }
+  }
+  return ['wheat', 'ore'];
+}
+
+function aiMonopolyTarget(game, pid) {
+  let best = null;
+  let bestN = 2;
+  for (const r of RESOURCES) {
+    let n = 0;
+    for (const p of game.players) {
+      if (p.id !== pid) n += p.resources[r];
+    }
+    if (n > bestN) {
+      bestN = n;
+      best = r;
+    }
+  }
+  return best;
+}
+
+function aiTryTrade(game, pid) {
+  const p = game.players[pid];
+  const goals = [COSTS.city, COSTS.settlement, COSTS.dev, COSTS.road];
+
+  for (const cost of goals) {
+    if (canAfford(p.resources, cost)) continue;
+    const missing = [];
+    for (const [r, n] of Object.entries(cost)) {
+      if (p.resources[r] < n) missing.push(r);
+    }
+    if (missing.length !== 1) continue;
+    const need = missing[0];
+    for (const r of RESOURCES) {
+      if (r === need) continue;
+      const rate = getTradeRate(game.board, pid, r);
+      const reserved = cost[r] || 0;
+      if (p.resources[r] - reserved >= rate) {
+        if (bankTrade(game, r, rate, need).ok) return true;
+      }
+    }
+  }
+
+  for (const r of RESOURCES) {
+    const rate = getTradeRate(game.board, pid, r);
+    if (p.resources[r] >= rate + 1) {
+      const want =
+        ['ore', 'wheat', 'brick', 'wood', 'sheep'].find((x) => x !== r && p.resources[x] === 0) ||
+        (r === 'wheat' ? 'ore' : 'wheat');
+      if (want !== r && bankTrade(game, r, rate, want).ok) return true;
+    }
+  }
+  return false;
+}
+
+async function aiBuildFreeRoads(game, onUpdate) {
+  const pid = game.currentPlayer;
+  while (game.freeRoads > 0) {
+    const roads = getPlaceableRoads(game, pid, false);
+    const best = pickBest(roads, (eid) => scoreEdge(game, eid, pid));
+    if (!best) {
+      game.freeRoads = 0;
+      break;
+    }
+    placeRoad(game, best);
+    await sleep(250);
+    onUpdate();
+  }
+  if (game.phase === 'roadBuilding') game.phase = 'main';
+}
+
+async function aiMainPhase(game, onUpdate) {
+  const pid = game.currentPlayer;
+  const p = game.players[pid];
+  let actions = 0;
+
+  while (actions < 12 && game.phase === 'main' && game.currentPlayer === pid) {
+    actions++;
+    let acted = false;
+
+    if (canAfford(p.resources, COSTS.city)) {
+      const cities = getUpgradeableSettlements(game, pid);
+      if (cities.length) {
+        const best = pickBest(cities, (vid) => scoreVertex(game, vid));
+        if (upgradeCity(game, best).ok) {
+          acted = true;
+          onUpdate();
+          await sleep(350);
+          if (game.phase === 'gameover') return;
+          continue;
+        }
+      }
+    }
+
+    if (canAfford(p.resources, COSTS.settlement) && p.settlements < 5) {
+      const spots = getPlaceableSettlements(game, pid, false);
+      if (spots.length) {
+        const best = pickBest(spots, (vid) => scoreVertex(game, vid));
+        if (placeSettlement(game, best).ok) {
+          acted = true;
+          onUpdate();
+          await sleep(350);
+          if (game.phase === 'gameover') return;
+          continue;
+        }
+      }
+    }
+
+    if (canAfford(p.resources, COSTS.road) && p.roads < 15) {
+      const roads = getPlaceableRoads(game, pid, false);
+      const spots = getPlaceableSettlements(game, pid, false);
+      if (roads.length && (spots.length === 0 || p.roads < 4 || Math.random() < 0.55)) {
+        const best = pickBest(roads, (eid) => scoreEdge(game, eid, pid));
+        if (placeRoad(game, best).ok) {
+          acted = true;
+          onUpdate();
+          await sleep(300);
+          continue;
+        }
+      }
+    }
+
+    if (canAfford(p.resources, COSTS.dev) && game.devDeck.length > 0) {
+      const total = totalResources(p.resources);
+      if (
+        total >= 6 ||
+        (!canAfford(p.resources, COSTS.settlement) && !canAfford(p.resources, COSTS.city))
+      ) {
+        if (buyDevCard(game).ok) {
+          acted = true;
+          onUpdate();
+          await sleep(300);
+          if (game.phase === 'gameover') return;
+          continue;
+        }
+      }
+    }
+
+    if (!game.turnDevPlayed) {
+      const yop = p.devCards.findIndex((c) => c.type === 'yearOfPlenty' && !c.justBought);
+      if (yop >= 0 && totalResources(p.resources) < 4) {
+        const need = aiNeededResources(p);
+        playDevCard(game, yop, { resources: [need[0], need[1] || need[0]] });
+        acted = true;
+        onUpdate();
+        await sleep(300);
+        continue;
+      }
+      const mon = p.devCards.findIndex((c) => c.type === 'monopoly' && !c.justBought);
+      if (mon >= 0) {
+        const target = aiMonopolyTarget(game, pid);
+        if (target) {
+          playDevCard(game, mon, { resource: target });
+          acted = true;
+          onUpdate();
+          await sleep(300);
+          continue;
+        }
+      }
+      const rb = p.devCards.findIndex((c) => c.type === 'roadBuilding' && !c.justBought);
+      if (rb >= 0 && getPlaceableRoads(game, pid, false).length > 0) {
+        playDevCard(game, rb);
+        onUpdate();
+        await aiBuildFreeRoads(game, onUpdate);
+        acted = true;
+        continue;
+      }
+    }
+
+    if (aiTryTrade(game, pid)) {
+      acted = true;
+      onUpdate();
+      await sleep(250);
+      continue;
+    }
+
+    if (!acted) break;
+  }
+}
+
+/**
+ * Advance the game automatically until a human decision is required.
+ * Robust state machine — must not leave AI mid-turn after human discard/steal.
+ */
+async function pumpAI(game, onUpdate) {
+  let guard = 0;
+
+  while (guard++ < 60 && game.phase !== 'gameover') {
+    ensurePlayableState(game);
+
+    // ——— Setup ———
+    if (game.phase === 'setup') {
+      const pid = getSetupPlayer(game);
+      if (!game.players[pid]?.isAI) return; // human places
+      if (game.setupStep === 'settlement') {
+        const spots = getPlaceableSettlements(game, pid, true);
+        const best = pickBest(spots, (vid) => scoreVertex(game, vid));
+        if (!best) {
+          // Extremely rare (board full); skip this AI's remaining setup placements
+          console.warn('AI setup: no settlement spots, skipping setup slots');
+          while (
+            game.phase === 'setup' &&
+            getSetupPlayer(game) === pid
+          ) {
+            // Force-advance setup index by faking completion if stuck mid road/settlement
+            if (game.setupStep === 'road' && game.setupLastVertex) {
+              game.setupIndex++;
+              game.setupStep = 'settlement';
+              game.setupLastVertex = null;
+            } else {
+              game.setupIndex++;
+              game.setupStep = 'settlement';
+              game.setupLastVertex = null;
+            }
+            if (game.setupIndex >= game.players.length * 2) {
+              game.phase = 'roll';
+              game.currentPlayer = 0;
+              break;
+            }
+          }
+          onUpdate();
+          continue;
+        }
+        placeSettlement(game, best);
+      } else {
+        const roads = getPlaceableRoads(game, pid, true, game.setupLastVertex);
+        const best = pickBest(roads, (eid) => scoreEdge(game, eid, pid));
+        if (!best) {
+          console.warn('AI setup: no road spots, skipping road');
+          game.setupIndex++;
+          game.setupStep = 'settlement';
+          game.setupLastVertex = null;
+          if (game.setupIndex >= game.players.length * 2) {
+            game.phase = 'roll';
+            game.currentPlayer = 0;
+          }
+          onUpdate();
+          continue;
+        }
+        placeRoad(game, best);
+      }
+      onUpdate();
+      await sleep(400);
+      continue;
+    }
+
+    // ——— Discard (any player in queue) ———
+    if (game.phase === 'discard') {
+      if (!game.discardQueue.length) {
+        game.phase = 'robber';
+        continue;
+      }
+      const id = game.discardQueue[0];
+      if (!game.players[id].isAI) return; // human modal
+      await aiDiscard(game, id);
+      onUpdate();
+      await sleep(250);
+      continue;
+    }
+
+    // ——— Steal ———
+    if (game.phase === 'steal') {
+      const pid = game.currentPlayer;
+      if (!game.players[pid]?.isAI) return; // human modal
+      const targets = game.pendingSteal || [];
+      if (targets.length) {
+        doSteal(game, targets[Math.floor(Math.random() * targets.length)]);
+      } else {
+        game.pendingSteal = null;
+        game.phase = 'main';
+      }
+      onUpdate();
+      await sleep(200);
+      continue;
+    }
+
+    // ——— Robber ———
+    if (game.phase === 'robber') {
+      if (!game.players[game.currentPlayer]?.isAI) return; // human clicks tile
+      await aiRobber(game);
+      onUpdate();
+      await sleep(300);
+      continue;
+    }
+
+    // ——— Free roads (dev card) ———
+    if (game.phase === 'roadBuilding') {
+      if (!game.players[game.currentPlayer]?.isAI) {
+        resolveRoadBuildingPhase(game);
+        if (game.phase === 'roadBuilding') return; // human must place
+        continue;
+      }
+      await aiBuildFreeRoads(game, onUpdate);
+      resolveRoadBuildingPhase(game);
+      onUpdate();
+      continue;
+    }
+
+    // ——— Current player is human: wait for roll / main ———
+    const cur = game.players[game.currentPlayer];
+    if (!cur?.isAI) {
+      if (game.phase === 'roll' || game.phase === 'main') return;
+      // Unknown human-facing phase — stop and let UI handle
+      return;
+    }
+
+    // ——— AI roll phase ———
+    if (game.phase === 'roll') {
+      await sleep(300);
+      await aiMaybePlayKnight(game, onUpdate);
+      // Knight may switch to robber / steal — loop handles those
+      if (game.phase !== 'roll') continue;
+
+      rollDice(game);
+      onUpdate();
+      await sleep(450);
+      continue; // discard / main / robber handled next iteration
+    }
+
+    // ——— AI main phase ———
+    if (game.phase === 'main') {
+      await sleep(200);
+      await aiMainPhase(game, onUpdate);
+      // Dev cards may enter robber / roadBuilding / etc.
+      if (game.phase !== 'main') continue;
+      if (game.phase === 'gameover') return;
+
+      await sleep(300);
+      endTurn(game);
+      onUpdate();
+      await sleep(150);
+      continue;
+    }
+
+    // Fallback: unknown phase with AI — force recovery
+    console.warn('pumpAI: unexpected phase', game.phase);
+    if (game.phase !== 'main' && game.phase !== 'roll') {
+      game.phase = 'main';
+      game.freeRoads = 0;
+      game.pendingSteal = null;
+      game.mustMoveRobber = false;
+    } else {
+      break;
+    }
+  }
+}
+
+/** @deprecated use pumpAI — kept for any external callers */
+async function runAITurn(game, onUpdate) {
+  await pumpAI(game, onUpdate);
+}
+
+
+/* ===== js/ui.js ===== */
+/**
+ * DOM / SVG rendering and user interaction.
+ */
+
+
+
+
+
+function el(id) {
+  return document.getElementById(id);
+}
+
+function renderAll(game, handlers) {
+  renderPlayers(game);
+  renderBoard(game, handlers);
+  renderResources(game);
+  renderDevCards(game, handlers);
+  renderActions(game, handlers);
+  renderPhase(game);
+  renderDice(game);
+  renderLog(game);
+  renderSpecials(game);
+}
+
+function renderSpecials(game) {
+  const lr = el('longest-road');
+  const la = el('largest-army');
+  if (game.longestRoadPlayer != null) {
+    const p = game.players[game.longestRoadPlayer];
+    lr.textContent = `🛣️ 最長道路 — ${p.name} (${p.longestRoadLen})`;
+    lr.classList.add('held');
+  } else {
+    lr.textContent = '🛣️ 最長道路 —';
+    lr.classList.remove('held');
+  }
+  if (game.largestArmyPlayer != null) {
+    const p = game.players[game.largestArmyPlayer];
+    la.textContent = `⚔️ 最大軍隊 — ${p.name} (${p.knightsPlayed})`;
+    la.classList.add('held');
+  } else {
+    la.textContent = '⚔️ 最大軍隊 —';
+    la.classList.remove('held');
+  }
+}
+
+function renderPlayers(game) {
+  const root = el('players-list');
+  root.innerHTML = '';
+  const controller = uiControllerId(game);
+  for (const p of game.players) {
+    const active =
+      (game.phase === 'setup' && getSetupPlayer(game) === p.id) ||
+      (game.phase !== 'setup' &&
+        game.phase !== 'discard' &&
+        game.currentPlayer === p.id &&
+        game.phase !== 'gameover') ||
+      (game.phase === 'discard' && game.discardQueue[0] === p.id);
+
+    const card = document.createElement('div');
+    card.className = 'player-card' + (active ? ' active' : '');
+    card.style.borderLeftColor = p.color;
+
+    // Only show exact VP for the controller (hot-seat privacy); others public
+    const isSelf = p.id === controller && !p.isAI;
+    const shownVP = p.isAI || !isSelf ? publicVP(game, p.id) : totalVP(game, p.id);
+    const hiddenNote =
+      !p.isAI && p.victoryPointsHidden && isSelf
+        ? ` (${publicVP(game, p.id)}+隱)`
+        : !p.isAI && p.victoryPointsHidden
+          ? ''
+          : '';
+
+    card.innerHTML = `
+      <div class="name-row">
+        <span>${p.isAI ? '🤖' : '👤'} ${p.name}</span>
+        <span class="vp">${shownVP}分${hiddenNote}</span>
+      </div>
+      <div class="stats">
+        <span>🏠${p.settlements}</span>
+        <span>🏰${p.cities}</span>
+        <span>🛤️${p.roads}</span>
+        <span>🃏${p.devCards.length}</span>
+        <span>⚔️${p.knightsPlayed}</span>
+        <span>📦${totalResources(p.resources)}</span>
+      </div>
+    `;
+    root.appendChild(card);
+  }
+}
+
+function renderPhase(game) {
+  const banner = el('phase-banner');
+  const p =
+    game.phase === 'setup'
+      ? game.players[getSetupPlayer(game)]
+      : game.players[game.currentPlayer];
+
+  const map = {
+    setup:
+      game.setupStep === 'settlement'
+        ? `${p.name}：放置村莊`
+        : `${p.name}：放置道路`,
+    roll: `${p.name}：擲骰`,
+    main: `${p.name}：建造 / 交易`,
+    discard: '丟棄資源（超過 7 張）',
+    robber: `${p.name}：移動強盜`,
+    steal: '選擇搶奪對象',
+    roadBuilding: `${p.name}：免費建造道路（剩 ${game.freeRoads}）`,
+    gameover: game.winner != null ? `${game.players[game.winner].name} 獲勝！` : '遊戲結束',
+  };
+  banner.textContent = map[game.phase] || game.phase;
+}
+
+function renderDice(game) {
+  const [d1, d2] = game.dice;
+  el('die1').textContent = d1 || '?';
+  el('die2').textContent = d2 || '?';
+  el('dice-sum').textContent = d1 && d2 ? `= ${d1 + d2}` : '';
+}
+
+function renderLog(game) {
+  const root = el('game-log');
+  root.innerHTML = game.log
+    .slice(0, 40)
+    .map((e) => {
+      const cls = ['log-entry'];
+      if (e.important) cls.push('important');
+      if (e.gain) cls.push('gain');
+      return `<div class="${cls.join(' ')}">${e.msg}</div>`;
+    })
+    .join('');
+}
+
+function renderResources(game) {
+  const id = uiControllerId(game);
+  const p = game.players[id];
+  const title = el('hand-title');
+  const root = el('resources');
+
+  if (!p || p.isAI) {
+    if (title) title.textContent = '資源（AI 回合中）';
+    root.innerHTML = '<span class="muted" style="font-size:.85rem">AI 操作中…</span>';
+    return;
+  }
+
+  if (title) title.textContent = `${p.name} 的資源`;
+  root.innerHTML = RESOURCES.map(
+    (r) => `
+    <div class="res-chip">
+      <span class="res-dot" style="background:${RES_COLOR[r]}"></span>
+      <span>${RES_EMOJI[r]} ${RES_LABEL[r]}</span>
+      <span class="count">${p.resources[r]}</span>
+    </div>
+  `
+  ).join('');
+}
+
+function renderDevCards(game, handlers) {
+  const id = uiControllerId(game);
+  const p = game.players[id];
+  const root = el('dev-cards');
+  if (!p || p.isAI) {
+    el('dev-count').textContent = '(—)';
+    root.innerHTML = '<span class="muted" style="font-size:.8rem">—</span>';
+    return;
+  }
+
+  el('dev-count').textContent = `(${p.devCards.length})`;
+  root.innerHTML = '';
+
+  const canAct =
+    isHumanActing(game) &&
+    actingPlayerId(game) === p.id &&
+    !game.pendingTrade;
+
+  p.devCards.forEach((card, i) => {
+    const info = DEV_TYPES[card.type];
+    const btn = document.createElement('button');
+    btn.className = 'dev-card-btn';
+    btn.textContent = `${info.emoji} ${info.label}${card.justBought ? ' (新)' : ''}`;
+    btn.title = info.desc;
+    const canPlay =
+      canAct &&
+      !card.justBought &&
+      card.type !== 'victory' &&
+      !game.turnDevPlayed &&
+      (game.phase === 'main' || (game.phase === 'roll' && card.type === 'knight'));
+    btn.disabled = !canPlay;
+    if (canPlay) {
+      btn.addEventListener('click', () => handlers.onPlayDev(i));
+    }
+    root.appendChild(btn);
+  });
+
+  if (!p.devCards.length) {
+    root.innerHTML = '<span class="muted" style="font-size:.8rem">無</span>';
+  }
+}
+
+function renderActions(game, handlers) {
+  const isHuman = isHumanActing(game) && !game.pendingTrade;
+  const pid = actingPlayerId(game);
+  const p = game.players[pid];
+
+  const roll = el('btn-roll');
+  const road = el('btn-build-road');
+  const sett = el('btn-build-settlement');
+  const city = el('btn-build-city');
+  const dev = el('btn-buy-dev');
+  const trade = el('btn-trade');
+  const end = el('btn-end');
+  const hint = el('build-hint');
+
+  const mainOk = isHuman && game.phase === 'main' && p && !p.isAI && !game.pendingTrade;
+  const freeRoad = isHuman && game.phase === 'roadBuilding' && game.freeRoads > 0;
+  // Must have rolled before ending turn (enforced in game.endTurn too)
+  const canEnd = mainOk && game.hasRolled;
+
+  roll.disabled = !(isHuman && game.phase === 'roll');
+  road.disabled = !(
+    (mainOk && canAfford(p.resources, COSTS.road) && p.roads < 15) ||
+    freeRoad ||
+    (isHuman && game.phase === 'setup' && game.setupStep === 'road')
+  );
+  sett.disabled = !(
+    (mainOk && canAfford(p.resources, COSTS.settlement) && p.settlements < 5) ||
+    (isHuman && game.phase === 'setup' && game.setupStep === 'settlement')
+  );
+  city.disabled = !(mainOk && canAfford(p.resources, COSTS.city) && p.cities < 4);
+  dev.disabled = !(mainOk && canAfford(p.resources, COSTS.dev) && game.devDeck.length > 0);
+  trade.disabled = !mainOk;
+  end.disabled = !canEnd;
+
+  // Active build mode styling
+  [road, sett, city].forEach((b) => b.classList.remove('active-build'));
+  if (game.buildMode === 'road') road.classList.add('active-build');
+  if (game.buildMode === 'settlement') sett.classList.add('active-build');
+  if (game.buildMode === 'city') city.classList.add('active-build');
+
+  if (game.buildMode) {
+    hint.classList.remove('hidden');
+    const labels = {
+      road: '在地圖上點擊邊線放置道路（再按一次按鈕取消）',
+      settlement: '在地圖上點擊路口放置村莊（再按一次取消）',
+      city: '點擊你的村莊升級為城市（再按一次取消）',
+    };
+    hint.textContent = labels[game.buildMode] || '';
+  } else if (game.phase === 'setup' && isHuman) {
+    hint.classList.remove('hidden');
+    hint.textContent =
+      game.setupStep === 'settlement'
+        ? '點擊地圖上的路口放置村莊'
+        : '點擊與村莊相連的邊線放置道路';
+  } else if (game.phase === 'robber' && isHuman) {
+    hint.classList.remove('hidden');
+    hint.textContent = '點擊一個地塊移動強盜';
+  } else if (freeRoad) {
+    hint.classList.remove('hidden');
+    hint.textContent = `免費道路：再點擊邊線放置（剩 ${game.freeRoads} 條）`;
+  } else {
+    hint.classList.add('hidden');
+  }
+
+  // Wire buttons once via handlers flag
+  if (!handlers._bound) {
+    roll.addEventListener('click', () => handlers.onRoll());
+    road.addEventListener('click', () => handlers.onBuildMode('road'));
+    sett.addEventListener('click', () => handlers.onBuildMode('settlement'));
+    city.addEventListener('click', () => handlers.onBuildMode('city'));
+    dev.addEventListener('click', () => handlers.onBuyDev());
+    trade.addEventListener('click', () => handlers.onTradeOpen());
+    end.addEventListener('click', () => handlers.onEndTurn());
+    handlers._bound = true;
+  }
+}
+
+function renderBoard(game, handlers) {
+  const svg = el('board');
+  const board = game.board;
+
+  // Determine highlights
+  let placeVerts = new Set();
+  let placeEdges = new Set();
+  let cityVerts = new Set();
+  let robberMode = false;
+
+  const actId = actingPlayerId(game);
+  const humanSetup =
+    game.phase === 'setup' && !game.players[getSetupPlayer(game)]?.isAI;
+  const humanTurn = isHumanActing(game) && !game.pendingTrade;
+  const pid = humanTurn ? actId : -1;
+
+  if (humanSetup && game.setupStep === 'settlement') {
+    placeVerts = new Set(getPlaceableSettlements(game, actId, true));
+  } else if (humanSetup && game.setupStep === 'road') {
+    placeEdges = new Set(getPlaceableRoads(game, actId, true, game.setupLastVertex));
+  } else if (humanTurn && game.phase === 'roadBuilding') {
+    placeEdges = new Set(getPlaceableRoads(game, pid, false));
+  } else if (humanTurn && game.phase === 'main' && game.buildMode === 'road') {
+    placeEdges = new Set(getPlaceableRoads(game, pid, false));
+  } else if (humanTurn && game.phase === 'main' && game.buildMode === 'settlement') {
+    placeVerts = new Set(getPlaceableSettlements(game, pid, false));
+  } else if (humanTurn && game.phase === 'main' && game.buildMode === 'city') {
+    cityVerts = new Set(getUpgradeableSettlements(game, pid));
+  } else if (humanTurn && game.phase === 'robber') {
+    robberMode = true;
+  }
+
+  const parts = [];
+
+  // Sea background circle-ish via large rect already in CSS; draw ports
+  for (const e of Object.values(board.edges)) {
+    if (!e.port) continue;
+    const va = board.vertices[e.a];
+    const vb = board.vertices[e.b];
+    const mx = (va.x + vb.x) / 2;
+    const my = (va.y + vb.y) / 2;
+    // push outward from center
+    const cx = 450;
+    const cy = 390;
+    const dx = mx - cx;
+    const dy = my - cy;
+    const len = Math.hypot(dx, dy) || 1;
+    const px = mx + (dx / len) * 22;
+    const py = my + (dy / len) * 22;
+    const label =
+      e.port.resource != null
+        ? `2:1 ${RES_EMOJI[e.port.resource]}`
+        : '3:1';
+    parts.push(
+      `<text class="port-label" x="${px}" y="${py}">⚓${label}</text>`
+    );
+  }
+
+  // Tiles — resource name + number + dice probability
+  for (const t of board.tiles) {
+    const pts = getHexPolygonPoints(t.cx, t.cy, board.hexSize);
+    const stroke = t.robber ? '#c0392b' : 'rgba(0,0,0,.25)';
+    const sw = t.robber ? 3.5 : 1.5;
+    const clickable = robberMode && t.id !== board.robberTileId;
+    const cls = 'hex-tile' + (clickable ? ' clickable robber-target' : '');
+    const name = TILE_LABEL[t.type] || t.type;
+    const resName = TILE_RESOURCE_LABEL[t.type] || '';
+    const hasNum = t.number != null;
+    const prob = hasNum ? formatProbability(t.number) : null;
+
+    parts.push(
+      `<polygon class="${cls}" data-tile="${t.id}" points="${pts}" fill="${tileFill(t.type)}" stroke="${stroke}" stroke-width="${sw}" />`
+    );
+
+    // Top: emoji + terrain name
+    parts.push(
+      `<text class="tile-emoji" x="${t.cx}" y="${t.cy - 22}" text-anchor="middle" dominant-baseline="central" font-size="14" pointer-events="none">${TILE_EMOJI[t.type]}</text>`
+    );
+    parts.push(
+      `<text class="tile-name" x="${t.cx}" y="${t.cy - 8}" text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700" fill="#fff" pointer-events="none">${name}</text>`
+    );
+    parts.push(
+      `<text class="tile-res" x="${t.cx}" y="${t.cy + 4}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(255,255,255,.92)" pointer-events="none">${resName}</text>`
+    );
+
+    if (hasNum && prob) {
+      const hot = t.number === 6 || t.number === 8;
+      const numColor = hot ? '#c0392b' : '#1a1208';
+      // Number token plate
+      parts.push(
+        `<rect x="${t.cx - 22}" y="${t.cy + 10}" width="44" height="28" rx="8" fill="#f5f0e6" stroke="#222" stroke-width="1.2" pointer-events="none" />`
+      );
+      parts.push(
+        `<text class="number-token${hot ? ' hot' : ''}" x="${t.cx}" y="${t.cy + 20}" font-size="${hot ? 13 : 12}" fill="${numColor}">${t.number}</text>`
+      );
+      // Classic pip dots
+      parts.push(
+        `<text class="tile-dots${hot ? ' hot' : ''}" x="${t.cx}" y="${t.cy + 30}" text-anchor="middle" dominant-baseline="central" font-size="7" fill="${numColor}" pointer-events="none">${prob.dots}</text>`
+      );
+      // Explicit probability fraction + percent
+      parts.push(
+        `<text class="tile-prob" x="${t.cx}" y="${t.cy + 42}" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="700" fill="#fff" pointer-events="none">${prob.fraction} · ${prob.percent}</text>`
+      );
+    } else {
+      parts.push(
+        `<text class="tile-prob" x="${t.cx}" y="${t.cy + 22}" text-anchor="middle" dominant-baseline="central" font-size="9" fill="rgba(255,255,255,.85)" pointer-events="none">概率 0</text>`
+      );
+    }
+    if (t.robber) {
+      parts.push(
+        `<text x="${t.cx + 24}" y="${t.cy - 24}" text-anchor="middle" font-size="18" pointer-events="none">🥷</text>`
+      );
+    }
+  }
+
+  // Edges (roads) — draw outline under player colour for contrast
+  for (const e of Object.values(board.edges)) {
+    const va = board.vertices[e.a];
+    const vb = board.vertices[e.b];
+    const isPlace = placeEdges.has(e.id);
+    const hasRoad = e.road != null;
+    const lineAttrs = `x1="${va.x}" y1="${va.y}" x2="${vb.x}" y2="${vb.y}" stroke-linecap="round"`;
+
+    if (hasRoad) {
+      const col = game.players[e.road].color;
+      // Dark outline so colour pops on any terrain
+      parts.push(
+        `<line class="edge road-outline" ${lineAttrs} stroke="#0a0e14" stroke-width="14" opacity="1" />`
+      );
+      parts.push(
+        `<line class="edge road" data-edge="${e.id}" ${lineAttrs} stroke="${col}" stroke-width="9" opacity="1" />`
+      );
+      // Light highlight stripe for extra clarity
+      parts.push(
+        `<line class="edge road-highlight" ${lineAttrs} stroke="rgba(255,255,255,.35)" stroke-width="3" opacity="1" />`
+      );
+    } else if (isPlace) {
+      // Wide hit target + high-contrast preview
+      parts.push(
+        `<line class="edge visible placeable" data-edge="${e.id}" ${lineAttrs} stroke="rgba(0,0,0,.55)" stroke-width="14" opacity="1" />`
+      );
+      parts.push(
+        `<line class="edge placeable-inner" ${lineAttrs} stroke="#f0a030" stroke-width="7" opacity="1" stroke-dasharray="8 5" pointer-events="none" />`
+      );
+    }
+  }
+
+  // Vertices (buildings / placeable)
+  for (const v of Object.values(board.vertices)) {
+    const isPlace = placeVerts.has(v.id);
+    const isCityTarget = cityVerts.has(v.id);
+    if (v.building) {
+      const col = game.players[v.building.playerId].color;
+      if (v.building.type === 'city') {
+        parts.push(
+          `<rect x="${v.x - 9}" y="${v.y - 9}" width="18" height="18" rx="3" fill="${col}" stroke="#111" stroke-width="1.5" />`
+        );
+        parts.push(
+          `<rect x="${v.x - 5}" y="${v.y - 14}" width="10" height="8" rx="1" fill="${col}" stroke="#111" stroke-width="1" />`
+        );
+      } else {
+        parts.push(
+          `<polygon points="${v.x},${v.y - 11} ${v.x + 10},${v.y + 2} ${v.x + 6},${v.y + 2} ${v.x + 6},${v.y + 10} ${v.x - 6},${v.y + 10} ${v.x - 6},${v.y + 2} ${v.x - 10},${v.y + 2}" fill="${col}" stroke="#111" stroke-width="1.2" />`
+        );
+      }
+      if (isCityTarget) {
+        parts.push(
+          `<circle class="vertex visible placeable" data-vertex="${v.id}" cx="${v.x}" cy="${v.y}" r="16" fill="none" stroke="#f0a030" stroke-width="2" stroke-dasharray="4 2" />`
+        );
+      }
+    } else if (isPlace) {
+      parts.push(
+        `<circle class="vertex visible placeable" data-vertex="${v.id}" cx="${v.x}" cy="${v.y}" r="8" fill="rgba(255,255,255,.85)" stroke="#f0a030" stroke-width="2" />`
+      );
+    }
+  }
+
+  svg.innerHTML = parts.join('');
+
+  // Events
+  svg.querySelectorAll('[data-tile]').forEach((node) => {
+    if (!node.classList.contains('clickable')) return;
+    node.addEventListener('click', () => handlers.onTileClick(+node.dataset.tile));
+  });
+  svg.querySelectorAll('[data-edge].placeable, [data-edge].visible').forEach((node) => {
+    if (!placeEdges.has(node.dataset.edge)) return;
+    node.style.cursor = 'pointer';
+    node.addEventListener('click', () => handlers.onEdgeClick(node.dataset.edge));
+  });
+  svg.querySelectorAll('[data-vertex]').forEach((node) => {
+    node.style.cursor = 'pointer';
+    node.addEventListener('click', () => handlers.onVertexClick(node.dataset.vertex));
+  });
+}
+
+/* ——— Modals ——— */
+
+/**
+ * @param {object} game
+ * @param {(result: { type: 'bank', give, n, get } | { type: 'player', toId, give, get }) => void} onConfirm
+ * @param {() => void} [onCancel]
+ */
+function showTradeModal(game, onConfirm, onCancel) {
+  const modal = el('trade-modal');
+  const pid = game.currentPlayer;
+  const p = game.players[pid];
+  let tab = 'bank';
+
+  const giveSel = el('trade-give');
+  const getSel = el('trade-get');
+  const nSel = el('trade-give-n');
+  const partnerSel = el('trade-partner');
+  const bankPanel = el('trade-bank-panel');
+  const playerPanel = el('trade-player-panel');
+
+  const giveMap = { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+  const getMap = { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+
+  giveSel.innerHTML = RESOURCES.map(
+    (r) => `<option value="${r}">${RES_EMOJI[r]} ${RES_LABEL[r]} (${p.resources[r]})</option>`
+  ).join('');
+  getSel.innerHTML = RESOURCES.map(
+    (r) => `<option value="${r}">${RES_EMOJI[r]} ${RES_LABEL[r]}</option>`
+  ).join('');
+
+  partnerSel.innerHTML = game.players
+    .filter((op) => op.id !== pid)
+    .map(
+      (op) =>
+        `<option value="${op.id}">${op.isAI ? '🤖' : '👤'} ${op.name}（${totalResources(op.resources)} 張）</option>`
+    )
+    .join('');
+
+  const updateRate = () => {
+    const rate = getTradeRate(game.board, pid, giveSel.value);
+    nSel.innerHTML = '';
+    const opt = document.createElement('option');
+    opt.value = rate;
+    opt.textContent = String(rate);
+    opt.selected = true;
+    nSel.appendChild(opt);
+  };
+  giveSel.onchange = updateRate;
+  updateRate();
+
+  function renderPick(containerId, map, maxFrom) {
+    const root = el(containerId);
+    root.innerHTML = '';
+    for (const r of RESOURCES) {
+      const row = document.createElement('div');
+      row.className = 'trade-pick-row';
+      const max = maxFrom ? maxFrom.resources[r] : 99;
+      row.innerHTML = `
+        <span>${RES_EMOJI[r]} ${RES_LABEL[r]}</span>
+        <div class="trade-stepper">
+          <button type="button" class="btn ghost trade-minus" data-r="${r}">−</button>
+          <span class="trade-n">${map[r]}</span>
+          <button type="button" class="btn ghost trade-plus" data-r="${r}">+</button>
+        </div>
+      `;
+      row.querySelector('.trade-minus').onclick = () => {
+        if (map[r] > 0) map[r]--;
+        renderPick(containerId, map, maxFrom);
+      };
+      row.querySelector('.trade-plus').onclick = () => {
+        if (map[r] < max) map[r]++;
+        renderPick(containerId, map, maxFrom);
+      };
+      root.appendChild(row);
+    }
+  }
+
+  function setTab(next) {
+    tab = next;
+    modal.querySelectorAll('.trade-tab').forEach((b) => {
+      b.classList.toggle('active', b.dataset.tab === tab);
+    });
+    bankPanel.classList.toggle('hidden', tab !== 'bank');
+    playerPanel.classList.toggle('hidden', tab !== 'player');
+    if (tab === 'player') {
+      el('trade-give-title').textContent = `${p.name} 交出`;
+      const partner = game.players[+partnerSel.value];
+      el('trade-get-title').textContent = partner
+        ? `從 ${partner.name} 獲得`
+        : '你獲得';
+      renderPick('trade-give-pick', giveMap, p);
+      if (partner) renderPick('trade-get-pick', getMap, partner);
+    }
+  }
+
+  modal.querySelectorAll('.trade-tab').forEach((b) => {
+    b.onclick = () => setTab(b.dataset.tab);
+  });
+  partnerSel.onchange = () => {
+    RESOURCES.forEach((r) => {
+      getMap[r] = 0;
+    });
+    setTab('player');
+  };
+  setTab('bank');
+
+  modal.classList.remove('hidden');
+
+  const conf = el('btn-trade-confirm');
+  const canc = el('btn-trade-cancel');
+  const cleanup = () => {
+    modal.classList.add('hidden');
+    conf.onclick = null;
+    canc.onclick = null;
+  };
+  conf.onclick = () => {
+    if (tab === 'bank') {
+      const g = giveSel.value;
+      const n = +nSel.value;
+      const t = getSel.value;
+      cleanup();
+      onConfirm({ type: 'bank', give: g, n, get: t });
+    } else {
+      const toId = +partnerSel.value;
+      cleanup();
+      onConfirm({
+        type: 'player',
+        toId,
+        give: { ...giveMap },
+        get: { ...getMap },
+      });
+    }
+  };
+  canc.onclick = () => {
+    cleanup();
+    onCancel?.();
+  };
+}
+
+function showTradeAcceptModal(game, onAccept, onReject) {
+  const offer = game.pendingTrade;
+  if (!offer) return;
+  const modal = el('trade-accept-modal');
+  const from = game.players[offer.fromId];
+  const to = game.players[offer.toId];
+  el('trade-accept-msg').textContent = `${to.name}，請查看 ${from.name} 提出的交易：`;
+
+  const giveStr = RESOURCES.filter((r) => offer.give[r] > 0)
+    .map((r) => `${RES_EMOJI[r]} ${RES_LABEL[r]}×${offer.give[r]}`)
+    .join(' ');
+  const getStr = RESOURCES.filter((r) => offer.get[r] > 0)
+    .map((r) => `${RES_EMOJI[r]} ${RES_LABEL[r]}×${offer.get[r]}`)
+    .join(' ');
+
+  el('trade-accept-detail').innerHTML = `
+    <div class="trade-accept-box">
+      <div><strong>你會得到：</strong> ${giveStr || '（無）'}</div>
+      <div><strong>你要交出：</strong> ${getStr || '（無）'}</div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+  el('btn-trade-accept').onclick = () => {
+    modal.classList.add('hidden');
+    onAccept();
+  };
+  el('btn-trade-reject').onclick = () => {
+    modal.classList.add('hidden');
+    onReject();
+  };
+}
+
+/**
+ * Hot-seat: hide board info until next human is ready.
+ */
+function showHandoff(player, reason, onReady) {
+  const modal = el('handoff-modal');
+  el('handoff-title').textContent = `輪到 ${player.name}`;
+  el('handoff-msg').textContent =
+    reason ||
+    `請把裝置交給 ${player.name}。準備好後再按按鈕（避免偷看手牌）。`;
+  modal.classList.remove('hidden');
+  el('btn-handoff-ready').onclick = () => {
+    modal.classList.add('hidden');
+    onReady?.();
+  };
+}
+
+function hideHandoff() {
+  el('handoff-modal')?.classList.add('hidden');
+}
+
+function showDiscardModal(game, playerId, onDone) {
+  const modal = el('discard-modal');
+  const p = game.players[playerId];
+  const need = Math.floor(totalResources(p.resources) / 2);
+  el('discard-msg').textContent = `${p.name} 有 ${totalResources(p.resources)} 張資源，需丟棄 ${need} 張。`;
+
+  const selected = createSel();
+  const picker = el('discard-picker');
+  picker.innerHTML = '';
+
+  function createSel() {
+    return { wood: 0, brick: 0, sheep: 0, wheat: 0, ore: 0 };
+  }
+
+  function totalSel() {
+    return RESOURCES.reduce((s, r) => s + selected[r], 0);
+  }
+
+  function redraw() {
+    picker.innerHTML = '';
+    for (const r of RESOURCES) {
+      if (p.resources[r] === 0) continue;
+      const btn = document.createElement('button');
+      btn.className = 'discard-item' + (selected[r] > 0 ? ' selected' : '');
+      btn.innerHTML = `${RES_EMOJI[r]} ${RES_LABEL[r]} ${selected[r]}/${p.resources[r]}`;
+      btn.onclick = () => {
+        if (selected[r] < p.resources[r] && totalSel() < need) {
+          selected[r]++;
+        } else if (selected[r] > 0) {
+          selected[r]--;
+        }
+        redraw();
+      };
+      picker.appendChild(btn);
+    }
+    el('btn-discard-confirm').disabled = totalSel() !== need;
+    el('btn-discard-confirm').textContent = `確認丟棄 (${totalSel()}/${need})`;
+  }
+
+  redraw();
+  modal.classList.remove('hidden');
+
+  el('btn-discard-confirm').onclick = () => {
+    if (totalSel() !== need) return;
+    modal.classList.add('hidden');
+    onDone({ ...selected });
+  };
+}
+
+function showStealModal(game, candidates, onPick) {
+  const modal = el('steal-modal');
+  const root = el('steal-targets');
+  root.innerHTML = '';
+  for (const id of candidates) {
+    const p = game.players[id];
+    const btn = document.createElement('button');
+    btn.className = 'btn';
+    btn.textContent = `${p.name}（${totalResources(p.resources)} 張資源）`;
+    btn.style.borderLeft = `4px solid ${p.color}`;
+    btn.onclick = () => {
+      modal.classList.add('hidden');
+      onPick(id);
+    };
+    root.appendChild(btn);
+  }
+  modal.classList.remove('hidden');
+}
+
+function showResourcePick(mode, onPick) {
+  // mode: 'monopoly' | 'yearOfPlenty'
+  const modal = el('resource-pick-modal');
+  const title = el('resource-pick-title');
+  const root = el('resource-pick-options');
+  root.innerHTML = '';
+
+  if (mode === 'monopoly') {
+    title.textContent = '壟斷：選擇一種資源';
+    for (const r of RESOURCES) {
+      const btn = document.createElement('button');
+      btn.className = 'pick-res-btn';
+      btn.textContent = `${RES_EMOJI[r]} ${RES_LABEL[r]}`;
+      btn.onclick = () => {
+        modal.classList.add('hidden');
+        onPick({ resource: r });
+      };
+      root.appendChild(btn);
+    }
+  } else {
+    title.textContent = '豐收之年：選擇 2 個資源（可重複）';
+    const picked = [];
+    const status = document.createElement('p');
+    status.className = 'muted';
+    status.textContent = '已選：無';
+    root.appendChild(status);
+
+    for (const r of RESOURCES) {
+      const btn = document.createElement('button');
+      btn.className = 'pick-res-btn';
+      btn.textContent = `${RES_EMOJI[r]} ${RES_LABEL[r]}`;
+      btn.onclick = () => {
+        if (picked.length >= 2) return;
+        picked.push(r);
+        status.textContent = `已選：${picked.map((x) => RES_LABEL[x]).join('、')}`;
+        if (picked.length === 2) {
+          modal.classList.add('hidden');
+          onPick({ resources: [...picked] });
+        }
+      };
+      root.appendChild(btn);
+    }
+  }
+  modal.classList.remove('hidden');
+}
+
+function showWinner(game) {
+  const modal = el('winner-modal');
+  const w = game.players[game.winner];
+  el('winner-text').textContent = `${w.name} 以 ${totalVP(game, w.id)} 分獲勝！`;
+  modal.classList.remove('hidden');
+}
+
+function hideWinner() {
+  el('winner-modal').classList.add('hidden');
+}
+
+function flashDice() {
+  el('die1').classList.remove('rolling');
+  el('die2').classList.remove('rolling');
+  void el('die1').offsetWidth;
+  el('die1').classList.add('rolling');
+  el('die2').classList.add('rolling');
+}
+
+
+/* ===== js/main.js ===== */
+/**
+ * Catan — entry point (solo vs AI + multi-human hot-seat)
+ */
+
+
+
+
+
+let game = null;
+let busy = false;
+let pumpQueued = false;
+let discardModalOpen = false;
+let stealModalOpen = false;
+let tradeAcceptOpen = false;
+let handoffOpen = false;
+/** Last human controller id — for hot-seat handoff detection */
+let lastHumanUiId = null;
+
+const handlers = {
+  onRoll: () => humanRoll(),
+  onBuildMode: (mode) => toggleBuildMode(mode),
+  onBuyDev: () => humanBuyDev(),
+  onTradeOpen: () => humanTrade(),
+  onEndTurn: () => humanEndTurn(),
+  onPlayDev: (i) => humanPlayDev(i),
+  onTileClick: (id) => humanTile(id),
+  onEdgeClick: (id) => humanEdge(id),
+  onVertexClick: (id) => humanVertex(id),
+};
+
+function refresh() {
+  if (!game) return;
+  ensurePlayableState(game);
+  renderAll(game, handlers);
+
+  if (game.phase === 'gameover' && game.winner != null) {
+    showWinner(game);
+  }
+
+  // Hot-seat handoff when UI controller changes between humans
+  maybeHandoff();
+
+  // Pending domestic trade accept
+  if (game.pendingTrade && !game.players[game.pendingTrade.toId].isAI && !tradeAcceptOpen) {
+    // Ensure handoff to acceptor first if needed
+    if (handoffOpen) return;
+    tradeAcceptOpen = true;
+    showTradeAcceptModal(
+      game,
+      () => {
+        tradeAcceptOpen = false;
+        const r = acceptPlayerTrade(game);
+        if (!r.ok) log(game, r.error);
+        afterHumanAction();
+      },
+      () => {
+        tradeAcceptOpen = false;
+        rejectPlayerTrade(game);
+        afterHumanAction();
+      }
+    );
+  }
+
+  // Human discard
+  if (
+    game.phase === 'discard' &&
+    game.discardQueue.length &&
+    !game.players[game.discardQueue[0]]?.isAI &&
+    !discardModalOpen &&
+    !handoffOpen
+  ) {
+    const pid = game.discardQueue[0];
+    discardModalOpen = true;
+    showDiscardModal(game, pid, (sel) => {
+      discardModalOpen = false;
+      const r = discardResources(game, pid, sel);
+      if (!r.ok) {
+        log(game, r.error);
+        refresh();
+        return;
+      }
+      afterHumanAction();
+    });
+  }
+
+  // Steal picker
+  if (
+    game.phase === 'steal' &&
+    isHumanActing(game) &&
+    game.pendingSteal?.length &&
+    !stealModalOpen &&
+    !handoffOpen
+  ) {
+    stealModalOpen = true;
+    showStealModal(game, game.pendingSteal, (tid) => {
+      stealModalOpen = false;
+      doSteal(game, tid);
+      afterHumanAction();
+    });
+  }
+}
+
+function maybeHandoff() {
+  if (!game || handoffOpen || game.phase === 'gameover') return;
+  // During AI control: keep lastHumanUiId so we can hand off A→…→B after AI
+  if (!isHumanController(game)) {
+    return;
+  }
+  const id = uiControllerId(game);
+  const humanCount = game.players.filter((p) => !p.isAI).length;
+  if (humanCount < 2) {
+    lastHumanUiId = id;
+    return;
+  }
+  if (lastHumanUiId != null && lastHumanUiId !== id) {
+    handoffOpen = true;
+    const p = game.players[id];
+    let reason = `請把裝置交給 ${p.name}`;
+    if (game.phase === 'discard') reason += '（需丟棄資源）';
+    else if (game.pendingTrade) reason += '（確認交易）';
+    else if (game.phase === 'setup') reason += '（放置村莊/道路）';
+    else reason += '（你的回合）';
+
+    showHandoff(p, reason, () => {
+      handoffOpen = false;
+      lastHumanUiId = id;
+      refresh();
+    });
+    return;
+  }
+  lastHumanUiId = id;
+}
+
+async function afterHumanAction() {
+  if (!game) return;
+  ensurePlayableState(game);
+  refresh();
+
+  if (busy) {
+    pumpQueued = true;
+    return;
+  }
+  busy = true;
+  pumpQueued = false;
+  try {
+    do {
+      pumpQueued = false;
+      await pumpAI(game, () => {
+        ensurePlayableState(game);
+        refresh();
+      });
+    } while (pumpQueued && game && game.phase !== 'gameover');
+  } catch (err) {
+    console.error('pumpAI error', err);
+    log(game, '系統：自動回合出現錯誤，已嘗試恢復', { important: true });
+    ensurePlayableState(game);
+    // Soft recovery only — do not wipe discard queues or skip mandatory roll
+    if (game?.players[game.currentPlayer]?.isAI) {
+      game.pendingSteal = null;
+      game.freeRoads = 0;
+      if (game.phase === 'roadBuilding') game.phase = 'main';
+      if (game.phase === 'steal' || game.phase === 'robber') {
+        game.mustMoveRobber = false;
+        game.phase = game.hasRolled ? 'main' : 'roll';
+        game.returnToRollAfterRobber = false;
+      }
+      if (game.phase === 'main' && game.hasRolled) {
+        try {
+          endTurn(game);
+        } catch (_) {
+          /* ignore */
+        }
+      }
+    }
+  } finally {
+    busy = false;
+    ensurePlayableState(game);
+    refresh();
+  }
+}
+
+function startGame() {
+  const humanCount = +el('human-count').value || 1;
+  let aiCount = +el('ai-count').value;
+  // Clamp total 2–4
+  if (humanCount + aiCount < 2) aiCount = 2 - humanCount;
+  if (humanCount + aiCount > 4) aiCount = Math.max(0, 4 - humanCount);
+
+  const nameInputs = document.querySelectorAll('.human-name-input');
+  const names = [];
+  nameInputs.forEach((input) => {
+    names[+input.dataset.idx] = input.value.trim() || `玩家${+input.dataset.idx + 1}`;
+  });
+  for (let i = 0; i < humanCount; i++) {
+    if (!names[i]) names[i] = `玩家${i + 1}`;
+  }
+
+  const mapMode = el('map-mode')?.value || 'balanced';
+  game = createGame({ humanCount, aiCount, names, mapMode });
+  const mapLabel = game.board.mapLabel || mapMode;
+  const humanN = game.players.filter((p) => !p.isAI).length;
+  const aiN = game.players.filter((p) => p.isAI).length;
+  log(
+    game,
+    `遊戲開始！${humanN} 名人類${aiN ? ` + ${aiN} AI` : ''} · 地圖：${mapLabel}`,
+    { important: true }
+  );
+
+  el('start-screen').classList.add('hidden');
+  el('game-screen').classList.remove('hidden');
+  hideWinner();
+  hideHandoff();
+  busy = false;
+  pumpQueued = false;
+  discardModalOpen = false;
+  stealModalOpen = false;
+  tradeAcceptOpen = false;
+  handoffOpen = false;
+  lastHumanUiId = null;
+  refresh();
+  afterHumanAction();
+}
+
+function requireHumanAct() {
+  return game && !busy && !handoffOpen && isHumanActing(game) && !game.pendingTrade;
+}
+
+function toggleBuildMode(mode) {
+  if (!requireHumanAct()) return;
+  if (game.phase === 'setup') return;
+  if (game.phase === 'roadBuilding') return;
+  if (game.phase !== 'main') return;
+
+  game.buildMode = game.buildMode === mode ? null : mode;
+  refresh();
+}
+
+function humanVertex(vid) {
+  if (!requireHumanAct()) return;
+
+  if (game.phase === 'setup' && game.setupStep === 'settlement') {
+    const r = placeSettlement(game, vid);
+    if (!r.ok) return;
+    game.buildMode = null;
+    afterHumanAction();
+    return;
+  }
+
+  if (game.phase === 'main' && game.buildMode === 'settlement') {
+    const r = placeSettlement(game, vid);
+    if (!r.ok) {
+      log(game, r.error);
+      refresh();
+      return;
+    }
+    game.buildMode = null;
+    afterHumanAction();
+    return;
+  }
+
+  if (game.phase === 'main' && game.buildMode === 'city') {
+    const r = upgradeCity(game, vid);
+    if (!r.ok) {
+      log(game, r.error);
+      refresh();
+      return;
+    }
+    game.buildMode = null;
+    afterHumanAction();
+  }
+}
+
+function humanEdge(eid) {
+  if (!requireHumanAct()) return;
+
+  if (game.phase === 'setup' && game.setupStep === 'road') {
+    const r = placeRoad(game, eid);
+    if (!r.ok) return;
+    afterHumanAction();
+    return;
+  }
+
+  if (game.phase === 'roadBuilding') {
+    const r = placeRoad(game, eid);
+    if (!r.ok) {
+      log(game, r.error);
+      resolveRoadBuildingPhase(game);
+      refresh();
+      return;
+    }
+    resolveRoadBuildingPhase(game);
+    afterHumanAction();
+    return;
+  }
+
+  if (game.phase === 'main' && game.buildMode === 'road') {
+    const r = placeRoad(game, eid);
+    if (!r.ok) {
+      log(game, r.error);
+      refresh();
+      return;
+    }
+    game.buildMode = null;
+    afterHumanAction();
+  }
+}
+
+function humanTile(tid) {
+  if (!requireHumanAct()) return;
+  if (game.phase !== 'robber') return;
+  const r = moveRobber(game, tid);
+  if (!r.ok) {
+    log(game, r.error);
+    refresh();
+    return;
+  }
+  afterHumanAction();
+}
+
+function humanRoll() {
+  if (!requireHumanAct()) return;
+  if (game.phase !== 'roll') return;
+  flashDice();
+  const r = rollDice(game);
+  if (!r.ok) return;
+  afterHumanAction();
+}
+
+function humanBuyDev() {
+  if (!requireHumanAct()) return;
+  const r = buyDevCard(game);
+  if (!r.ok) {
+    log(game, r.error);
+    refresh();
+    return;
+  }
+  refresh();
+}
+
+function humanTrade() {
+  if (!requireHumanAct()) return;
+  if (game.phase !== 'main') return;
+  showTradeModal(
+    game,
+    (result) => {
+      if (result.type === 'bank') {
+        const r = bankTrade(game, result.give, result.n, result.get);
+        if (!r.ok) log(game, r.error);
+        refresh();
+        return;
+      }
+      // player trade
+      const r = proposePlayerTrade(game, result.toId, result.give, result.get);
+      if (!r.ok) {
+        log(game, r.error);
+        refresh();
+        return;
+      }
+      if (r.needAccept) {
+        // Handoff + accept modal via refresh
+        afterHumanAction();
+        return;
+      }
+      // Auto accepted/rejected with AI
+      refresh();
+    },
+    () => refresh()
+  );
+}
+
+function humanEndTurn() {
+  if (!requireHumanAct()) return;
+  const r = endTurn(game);
+  if (!r.ok) {
+    log(game, r.error);
+    refresh();
+    return;
+  }
+  afterHumanAction();
+}
+
+function humanPlayDev(index) {
+  if (!requireHumanAct()) return;
+  const pid = actingPlayerId(game);
+  const card = game.players[pid].devCards[index];
+  if (!card) return;
+
+  if (card.type === 'yearOfPlenty') {
+    showResourcePick('yearOfPlenty', (extra) => {
+      const r = playDevCard(game, index, extra);
+      if (!r.ok) log(game, r.error);
+      afterHumanAction();
+    });
+    return;
+  }
+  if (card.type === 'monopoly') {
+    showResourcePick('monopoly', (extra) => {
+      const r = playDevCard(game, index, extra);
+      if (!r.ok) log(game, r.error);
+      afterHumanAction();
+    });
+    return;
+  }
+
+  const r = playDevCard(game, index);
+  if (!r.ok) {
+    log(game, r.error);
+    refresh();
+    return;
+  }
+  afterHumanAction();
+}
+
+// ——— Start screen helpers ———
+const MAP_DESCS = {
+  balanced: '有沙漠，資源分散，6/8 唔相鄰，產出較公平',
+  noDesert: '沙漠換成資源格，全部地塊都有號碼',
+  beginner: '沙漠置中、資源極分散、號碼最平衡',
+  clustered: '同類資源傾向連成一片，策略性更強',
+  random: '資源同號碼盡量隨機（仍避免 6/8 相鄰）',
+  wild: '無沙漠 + 完全隨機號碼（僅修 6/8）',
+};
+
+function updateMapDesc() {
+  const id = el('map-mode')?.value || 'balanced';
+  const node = el('map-mode-desc');
+  if (node) node.textContent = MAP_DESCS[id] || '';
+}
+
+function updatePlayerSetup() {
+  const humanCount = +el('human-count').value || 1;
+  const aiSel = el('ai-count');
+  // Disable invalid AI options so total stays 2–4
+  [...aiSel.options].forEach((opt) => {
+    const ai = +opt.value;
+    const total = humanCount + ai;
+    opt.disabled = total < 2 || total > 4;
+  });
+  // Fix selection if invalid
+  let aiCount = +aiSel.value;
+  if (humanCount + aiCount < 2 || humanCount + aiCount > 4) {
+    const valid = [...aiSel.options].find((o) => !o.disabled);
+    if (valid) {
+      aiSel.value = valid.value;
+      aiCount = +valid.value;
+    }
+  }
+
+  const total = humanCount + aiCount;
+  el('player-total-hint').textContent = `共 ${total} 名玩家（${humanCount} 人類 + ${aiCount} AI）`;
+
+  const box = el('human-names');
+  box.innerHTML = '';
+  for (let i = 0; i < humanCount; i++) {
+    const label = document.createElement('label');
+    label.innerHTML = `玩家 ${i + 1} 名字
+      <input class="human-name-input" data-idx="${i}" type="text" value="玩家${i + 1}" maxlength="12" />`;
+    box.appendChild(label);
+  }
+}
+
+el('map-mode')?.addEventListener('change', updateMapDesc);
+el('human-count')?.addEventListener('change', updatePlayerSetup);
+el('ai-count')?.addEventListener('change', updatePlayerSetup);
+updateMapDesc();
+updatePlayerSetup();
+
+el('btn-start').addEventListener('click', startGame);
+el('btn-new').addEventListener('click', () => {
+  if (confirm('開始新遊戲？目前進度會消失。')) {
+    el('game-screen').classList.add('hidden');
+    el('start-screen').classList.remove('hidden');
+    hideWinner();
+    hideHandoff();
+    game = null;
+  }
+});
+el('btn-play-again').addEventListener('click', () => {
+  hideWinner();
+  startGame();
+});
+el('btn-help').addEventListener('click', () => el('help-modal').classList.remove('hidden'));
+el('btn-help-close').addEventListener('click', () => el('help-modal').classList.add('hidden'));
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && game) {
+    game.buildMode = null;
+    refresh();
+  }
+});
+
+
+</script>
+</body>
+</html>

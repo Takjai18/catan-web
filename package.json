@@ -1,0 +1,11 @@
+{
+  "name": "catan-web",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "卡坦島網頁版 — 單人 vs AI",
+  "scripts": {
+    "start": "python3 -m http.server 8765",
+    "serve": "python3 -m http.server 8765"
+  }
+}

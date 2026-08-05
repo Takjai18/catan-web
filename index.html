@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>卡坦島 · Catan vs AI</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div id="app">
+    <!-- Start Screen -->
+    <div id="start-screen" class="screen">
+      <div class="start-card">
+        <div class="logo">🏝️</div>
+        <h1>卡坦島</h1>
+        <p class="subtitle">Settlers of Catan · 單人 / 多人熱座</p>
+        <div class="start-options">
+          <label>
+            人類玩家數量
+            <select id="human-count">
+              <option value="1" selected>1 人（+ AI）</option>
+              <option value="2">2 人</option>
+              <option value="3">3 人</option>
+              <option value="4">4 人</option>
+            </select>
+          </label>
+          <label id="ai-count-label">
+            AI 對手數量
+            <select id="ai-count">
+              <option value="0">0 個 AI</option>
+              <option value="1">1 個 AI</option>
+              <option value="2" selected>2 個 AI</option>
+              <option value="3">3 個 AI</option>
+            </select>
+          </label>
+          <p id="player-total-hint" class="map-mode-desc">共 3 名玩家（1 人類 + 2 AI）</p>
+          <div id="human-names" class="human-names">
+            <label>玩家 1 名字
+              <input class="human-name-input" data-idx="0" type="text" value="玩家1" maxlength="12" />
+            </label>
+          </div>
+          <label>
+            地圖模式
+            <select id="map-mode">
+              <option value="balanced" selected>經典平衡</option>
+              <option value="noDesert">無沙漠</option>
+              <option value="beginner">新手友善</option>
+              <option value="clustered">資源聚集</option>
+              <option value="random">完全隨機</option>
+              <option value="wild">狂野無沙漠</option>
+            </select>
+          </label>
+          <p id="map-mode-desc" class="map-mode-desc">有沙漠，資源分散，6/8 唔相鄰，產出較公平</p>
+        </div>
+        <button id="btn-start" class="btn primary big">開始遊戲</button>
+        <p class="hint">多人為<strong>熱座模式</strong>（同一裝置輪流操作）。回合中可與其他玩家交易。達到 <strong>10 分</strong> 勝利。</p>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hidden">
+      <header class="top-bar">
+        <div class="brand">🏝️ 卡坦島</div>
+        <div id="phase-banner" class="phase-banner">準備中…</div>
+        <div class="top-actions">
+          <button id="btn-help" class="btn ghost" title="規則">?</button>
+          <button id="btn-new" class="btn ghost">新遊戲</button>
+        </div>
+      </header>
+
+      <div class="game-layout">
+        <!-- Players -->
+        <aside class="panel players-panel">
+          <h2>玩家</h2>
+          <div id="players-list"></div>
+          <div class="specials">
+            <div id="longest-road" class="special-badge">🛣️ 最長道路 —</div>
+            <div id="largest-army" class="special-badge">⚔️ 最大軍隊 —</div>
+          </div>
+        </aside>
+
+        <!-- Board -->
+        <main class="board-wrap">
+          <div id="board-container">
+            <svg id="board" viewBox="0 0 900 780" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+          <div id="dice-area" class="dice-area">
+            <div id="die1" class="die">?</div>
+            <div id="die2" class="die">?</div>
+            <span id="dice-sum" class="dice-sum"></span>
+          </div>
+        </main>
+
+        <!-- Actions / Hand -->
+        <aside class="panel actions-panel">
+          <h2 id="hand-title">目前玩家資源</h2>
+          <div id="resources" class="resources"></div>
+
+          <h2>發展卡 <span id="dev-count" class="muted">(0)</span></h2>
+          <div id="dev-cards" class="dev-cards"></div>
+
+          <h2>行動</h2>
+          <div id="action-buttons" class="action-buttons">
+            <button id="btn-roll" class="btn primary" disabled>🎲 擲骰</button>
+            <button id="btn-build-road" class="btn" disabled title="木+磚">🛤️ 建路 (木+磚)</button>
+            <button id="btn-build-settlement" class="btn" disabled title="木+磚+羊+麥">🏠 建村 (木磚羊麥)</button>
+            <button id="btn-build-city" class="btn" disabled title="3麥+2礦">🏰 建城 (3麥+2礦)</button>
+            <button id="btn-buy-dev" class="btn" disabled title="羊+麥+礦">🃏 買發展卡</button>
+            <button id="btn-trade" class="btn" disabled>💱 交易</button>
+            <button id="btn-end" class="btn accent" disabled>結束回合 →</button>
+          </div>
+
+          <div id="build-hint" class="build-hint hidden"></div>
+        </aside>
+      </div>
+
+      <!-- Log -->
+      <footer class="log-bar">
+        <div id="game-log"></div>
+      </footer>
+    </div>
+
+    <!-- Trade Modal -->
+    <div id="trade-modal" class="modal hidden">
+      <div class="modal-card wide">
+        <h3>交易</h3>
+        <div class="trade-tabs">
+          <button type="button" class="trade-tab active" data-tab="bank">🏦 銀行</button>
+          <button type="button" class="trade-tab" data-tab="player">🤝 玩家</button>
+        </div>
+
+        <div id="trade-bank-panel">
+          <p class="muted">預設 4:1。若村莊在港口，可用 3:1 或特定 2:1。</p>
+          <div class="trade-row">
+            <label>交出
+              <select id="trade-give"></select>
+            </label>
+            <label>數量
+              <select id="trade-give-n">
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4" selected>4</option>
+              </select>
+            </label>
+            <span class="arrow">→</span>
+            <label>換取 1 個
+              <select id="trade-get"></select>
+            </label>
+          </div>
+        </div>
+
+        <div id="trade-player-panel" class="hidden">
+          <p class="muted">經典規則：雙方同意即可，比例任意。對方是人類時需交機確認。</p>
+          <label>交易對象
+            <select id="trade-partner"></select>
+          </label>
+          <div class="player-trade-grid">
+            <div>
+              <h4 id="trade-give-title">你交出</h4>
+              <div id="trade-give-pick" class="trade-pick"></div>
+            </div>
+            <div class="arrow-col">⇄</div>
+            <div>
+              <h4 id="trade-get-title">你獲得</h4>
+              <div id="trade-get-pick" class="trade-pick"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="btn-trade-confirm" class="btn primary">確認交易</button>
+          <button id="btn-trade-cancel" class="btn ghost">取消</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accept player trade -->
+    <div id="trade-accept-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>交易請求</h3>
+        <p id="trade-accept-msg" class="muted"></p>
+        <div id="trade-accept-detail" class="trade-accept-detail"></div>
+        <div class="modal-actions">
+          <button id="btn-trade-accept" class="btn primary">接受</button>
+          <button id="btn-trade-reject" class="btn ghost">拒絕</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hot-seat handoff -->
+    <div id="handoff-modal" class="modal hidden">
+      <div class="modal-card winner">
+        <div class="winner-emoji">🔄</div>
+        <h3 id="handoff-title">交給下一位玩家</h3>
+        <p id="handoff-msg" class="muted"></p>
+        <button id="btn-handoff-ready" class="btn primary big">我準備好了</button>
+      </div>
+    </div>
+
+    <!-- Robber / Discard Modal -->
+    <div id="discard-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>丟棄資源</h3>
+        <p id="discard-msg">擲出 7 點，你資源超過 7 張，請丟棄一半。</p>
+        <div id="discard-picker" class="discard-picker"></div>
+        <div class="modal-actions">
+          <button id="btn-discard-confirm" class="btn primary" disabled>確認丟棄</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steal picker -->
+    <div id="steal-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3>搶奪資源</h3>
+        <p>選擇一名玩家搶走 1 張隨機資源：</p>
+        <div id="steal-targets" class="steal-targets"></div>
+      </div>
+    </div>
+
+    <!-- Year of Plenty / Monopoly -->
+    <div id="resource-pick-modal" class="modal hidden">
+      <div class="modal-card">
+        <h3 id="resource-pick-title">選擇資源</h3>
+        <div id="resource-pick-options" class="resource-pick"></div>
+      </div>
+    </div>
+
+    <!-- Help -->
+    <div id="help-modal" class="modal hidden">
+      <div class="modal-card wide">
+        <h3>遊戲說明</h3>
+        <ul class="help-list">
+          <li><strong>目標：</strong>自己回合內達到 10 勝利點。</li>
+          <li><strong>計分：</strong>村莊 1 分、城市 2 分；最長道路 +2、最大軍隊 +2；發展卡「勝利點」+1（<strong>隱藏</strong>，牌背保密，所以對手睇落可能突然到 10 分）。</li>
+          <li><strong>介面：</strong>側欄分數預設係「公開分」；🃏 代表手持發展卡數量（可能含隱藏勝利點）。</li>
+          <li><strong>擲骰：</strong>有村莊/城市貼著該號碼地塊的玩家獲得資源。擲出 7 會觸發強盜。</li>
+          <li><strong>建造：</strong>路(木+磚)、村莊(木+磚+羊+麥)、城市(3麥+2礦)、發展卡(羊+麥+礦)。</li>
+          <li><strong>距離規則：</strong>兩個村莊之間至少隔一個路口。</li>
+          <li><strong>銀行：</strong>預設 4 換 1；港口可 3:1 或特定 2:1。</li>
+          <li><strong>玩家交易：</strong>自己回合可向其他玩家開價，雙方同意即成交（比例任意）。</li>
+          <li><strong>多人熱座：</strong>同一裝置輪流操作；換人時會提示交機，避免偷看手牌。</li>
+          <li><strong>騎士：</strong>移動強盜並搶奪；累積 3 張可爭最大軍隊。</li>
+        </ul>
+        <div class="modal-actions">
+          <button id="btn-help-close" class="btn primary">明白了</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Winner -->
+    <div id="winner-modal" class="modal hidden">
+      <div class="modal-card winner">
+        <div class="winner-emoji">🏆</div>
+        <h3 id="winner-text">勝利！</h3>
+        <button id="btn-play-again" class="btn primary big">再玩一局</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

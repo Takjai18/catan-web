@@ -1,0 +1,25 @@
+========================================
+  Settlers of Catan — USB Portable
+========================================
+
+QUICK START (Windows)
+1. Open folder: Catan_Katan_Island
+2. Double-click: Play_Catan.bat
+   Or double-click: index.html
+
+If the page is blank:
+- Run Play_Catan_Server.bat instead
+- Browser opens http://localhost:8765/
+
+Mac: double-click index.html
+
+FEATURES
+- 1-4 human players (hot-seat on one PC)
+- Optional AI opponents
+- Player-to-player trading + bank trading
+- Multiple map modes
+- No install, no account, works offline
+
+Goal: reach 10 victory points.
+
+Enjoy!
